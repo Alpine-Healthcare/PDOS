@@ -1,0 +1,1 @@
+{"version":3,"file":"Platform.d.ts","sourceRoot":"","sources":["../../src/constants/Platform.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,MAAM,iBAAiB,CAAC;AAEvC,oBAAY,aAAa;IACvB,GAAG,IAAA;IACH,MAAM,IAAA;IACN,IAAI,IAAA;CACL;AAED,MAAM,CAAC,OAAO,OAAO,QAAS,SAAQ,QAAQ,CAAC,aAAa,CAAC;IAClD,KAAK,EAAG,aAAa,CAAC;;IAYtB,MAAM;CAChB"}

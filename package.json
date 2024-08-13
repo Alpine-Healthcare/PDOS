@@ -1,6 +1,8 @@
 {
-  "name": "@alpinehealthcare/jscore",
-  "version": "0.0.2",
+  "name": "@alpinehealthcare/pdos",
+  "version": "0.0.3",
+  "outputPath": "dist",
+  "main": "dist/index.js",
   "scripts": {
     "watch": "tsc -w"
   },
