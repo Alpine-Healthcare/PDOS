@@ -1,5 +1,5 @@
-export const ALPINE_NODE = "http://localhost:8000/api/pdfs";
-//export const ALPINE_NODE = "https://network.alpine.healthcare/api/pdfs";
+export const ALPINE_NODE = "http://localhost:8000/pdos";
+//export const ALPINE_NODE = "https://network.alpine.healthcare/pdfs";
 
 export const getFromPdfs = async(
   hash: string,
