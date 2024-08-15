@@ -13,5 +13,11 @@ export default class Inbox extends PDFSNode {
     super(core, treePath, "N_Inbox", hash )
   }
 
+  public async addMessage(){
+    this.update({
+      "unread_messages": ["Please take a look at something!!"]
+    })
+  }
+
 }
 

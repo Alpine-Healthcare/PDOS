@@ -39,7 +39,6 @@ export class Core {
     public modules: ModuleManager = {};
     public apps: AppManager = {};
     public stores: any = {};
-    public graph: any = this.stores;
 
     public rpc: any;
     public static injectStore: any = []
@@ -81,6 +80,10 @@ export class Core {
         }
       )
     } 
+
+    public get tree(){
+      return this.stores;
+    }
 
     /*************************
      * Module Lifecycle Methods 

@@ -9,7 +9,7 @@ interface Config {}
 
 //const hash = "Qme8UavwerXnvCe1tiQRVdEZApkzadh1AtsjfmeeBSV8rY"
 //const hash = "QmczbczVzjqz67Y2ciQ5N8SM8VGptLCruCJDVPEgknVTPd"
-const hash = "QmaJtBdUUXDm4Z57zM3jSF99erid3MB84TxH7Z8ypyVpqp"
+const hash = "QmREYTDEipWA4A8WvMsF6nhVQUkSku2wdDQjFt13m3sRDK"
 
 export default class Auth extends Module {
   public accessPackage : any;

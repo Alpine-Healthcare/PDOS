@@ -1,4 +1,6 @@
+import { makeObservable, observable } from "mobx";
 import { Core } from "../Core";
+import { logger } from "../utils/logger";
 import DataManifest from "./DataManifest";
 import Inbox from "./Inbox";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
@@ -7,8 +9,16 @@ import TreatmentManifest from "./TreatmentManifest";
 
 
 export default class UserAccount extends PDFSNode {
+
+  public isRefreshing: boolean = false
+  public isLoaded: boolean = false
+
   constructor(core : Core){
     super(core, [], "N_UserAccount")
+    makeObservable(this, {
+      isLoaded: observable,
+      isRefreshing: observable,
+    })
 
     addNodeToNetworkMapper("TreatmentManifest", TreatmentManifest)
     addNodeToNetworkMapper("DataManifest", DataManifest)
@@ -16,16 +26,19 @@ export default class UserAccount extends PDFSNode {
   }
 
   public async initUser(hash: string) {
+    this.isLoaded = false
     this._hash = hash
     await this.node
     await this.refreshChildren
+    this.isLoaded = true
   }
 
   public async refresh(oldTreePath: string[], updateTreePath: string[]) {
-    console.log("\n\n\n\nTree Refresh!")
-    console.log("---------------------------------")
-    console.log("oldTreePath: ", oldTreePath)
-    console.log("updateTreePath: ", updateTreePath)
+    this.isRefreshing = true
+    logger.tree("\n\n\n\nTree Refresh!")
+    logger.tree("---------------------------------")
+    logger.tree("oldTreePath: ", oldTreePath)
+    logger.tree("updateTreePath: ", updateTreePath)
     const updateFunctions: any = []
 
     const getTreeUpdateFunctions = (
@@ -75,6 +88,8 @@ export default class UserAccount extends PDFSNode {
     for (const i in updateFunctions.reverse()) {
       await updateFunctions[i]()
     }
+
+    this.isRefreshing = false
 
   }
 

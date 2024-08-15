@@ -74,7 +74,6 @@ export declare class Core {
     modules: ModuleManager;
     apps: AppManager_2;
     stores: any;
-    graph: any;
     rpc: any;
     static injectStore: any;
     static injectLib: never[];
@@ -88,6 +87,7 @@ export declare class Core {
      *************************/
     private addConstantListeners;
     private onAuthChanged;
+    get tree(): any;
     /*************************
      * Module Lifecycle Methods
      *************************/
