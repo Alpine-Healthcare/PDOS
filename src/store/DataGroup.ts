@@ -10,19 +10,19 @@ export default class DataGroup extends PDFSNode {
     instanceType: string | undefined,
     hash?: string,
   ){
+    console.log("creating instance of data group: ", instanceType)
     super(core, treePath, "N_DataGroup_" + instanceType, hash )
   }
 
   public async updateData() {
-    console.log("updating data!!", this._rawNode.metric)
     const updateValue = await this.core?.modules?.dataRequest?.getTodaysValue(this._rawNode.metric)
 
-    console.log("updateValue: ", updateValue)
-    console.log("updateValue: ", typeof updateValue)
-
-    if (updateValue) {
+    if (updateValue !== undefined) {
+      const records = this._rawNode.records
+      records[new Date().getTime()] = updateValue
       await this.update({
-        value: updateValue
+        ...this._rawNode,
+        records
       })
     }
   }

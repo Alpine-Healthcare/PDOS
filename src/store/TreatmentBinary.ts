@@ -1,5 +1,6 @@
 import { Core } from "../Core";
 import DataGroup from "./DataGroup";
+import { toCamel } from "./DataManifest";
 import { doesPDFSNodeExist } from "./NetworkMapper";
 import PDFSNode from "./PDFSNode";
 
@@ -16,6 +17,7 @@ export default class TreatmentBinary extends PDFSNode {
   }
 
   protected onNodeLoad(){
+    console.log("TreatmentBinary node loaded")
     this.checkDataAccess()
 
     //TODO: need a way to not check the pdos tree only 
@@ -46,14 +48,30 @@ export default class TreatmentBinary extends PDFSNode {
     }
   }
 
+  private async createDataGroup(metric: string) {
+    const rootNode = this.core.stores.userAccount
+    if (!doesPDFSNodeExist(toCamel(metric), rootNode)) {
+      console.log(`${metric} data group does not exist`)
+      await rootNode.edges.e_out_DataManifest.addDataGroup(
+        metric
+      )
+    }
+  }
+
   public async syncData(){
     for(let i = 0; i < this.dataMetrics.length; i++) {
       const metric = this.dataMetrics[i]
       const dataGroups = this.core.stores.userAccount.edges.e_out_DataManifest.edges
-      const dataGroup = Object.values(dataGroups).find(
+      const getDataGroup = (metric: string) => Object.values(dataGroups).find(
         (node: any) =>
-          node._nodeType.toLowerCase().includes(metric.toLowerCase())
+          node._nodeType.toLowerCase().includes(toCamel(metric).toLowerCase())
       ) as DataGroup
+
+      if (!getDataGroup(metric)) {
+        await this.createDataGroup(metric)
+      }
+
+      const dataGroup = getDataGroup(metric)
       await dataGroup.updateData()
     }
   }

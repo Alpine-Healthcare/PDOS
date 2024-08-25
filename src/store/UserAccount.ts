@@ -6,12 +6,14 @@ import Inbox from "./Inbox";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
 import PDFSNode from "./PDFSNode";
 import TreatmentManifest from "./TreatmentManifest";
+import { getUserHashId } from "../utils/mutex";
 
 
 export default class UserAccount extends PDFSNode {
 
   public isRefreshing: boolean = false
   public isLoaded: boolean = false
+  public lastUpdateTimestamp: number = 0
 
   constructor(core : Core){
     super(core, [], "N_UserAccount")
@@ -23,6 +25,23 @@ export default class UserAccount extends PDFSNode {
     addNodeToNetworkMapper("TreatmentManifest", TreatmentManifest)
     addNodeToNetworkMapper("DataManifest", DataManifest)
     addNodeToNetworkMapper("Inbox", Inbox)
+  }
+
+  public async checkPDOSTreeIsMostRecent(){
+    const hashId = await getUserHashId(this._rawNode.credentials[0].id)
+    if (hashId === this._hash) {
+      console.log("tree is teh same")
+      return true
+    }
+    this.edges = {}
+    await this.initUser(hashId)
+    return false
+  }
+
+  public async refreshPDOSTree(){
+    const hashId = await getUserHashId(this._rawNode.credentials[0].id)
+    this.edges = {}
+    await this.initUser(hashId)
   }
 
   public async initUser(hash: string) {

@@ -81,6 +81,7 @@ export declare class Core {
     private delayedInit;
     started: boolean;
     isRPCServer: boolean;
+    isComputeNode: boolean;
     constructor(config: any);
     /*************************
      * Jscore Constant Reactors
@@ -129,7 +130,11 @@ export declare class Core {
 
 declare class DataRequest extends Module {
     private config;
-    constructor(core: Core, config: Config_3);
+    private dependencyInjection;
+    private HealthKit;
+    private reactNativeHealthKit;
+    private MetricMap;
+    constructor(core: Core, config: Config_3, dependencyInjection: DependencyInjection_2);
     protected start(): Promise<void>;
     checkAccess(metrics: (any)[]): Promise<void>;
     getTodaysValue(metric: string): Promise<number | undefined>;
@@ -141,6 +146,10 @@ declare interface Dependencies {
 }
 
 declare type DependencyInjection = MobileLifecycleDependencies;
+
+declare type DependencyInjection_2 = {
+    reactNativeHealthKit: any;
+};
 
 declare interface ExpoDependencies {
     Notifications: any;
@@ -226,6 +235,8 @@ export declare class PDFSNode {
     setRawNodeUpdate(rawNode: any): void;
     get refreshChildren(): Promise<void> | undefined;
     refreshTree(previousTreePath: string[]): Promise<void>;
+    protected getUserMutex(): Promise<boolean>;
+    protected releaseMutex(): Promise<void>;
     protected update(rawNodeUpdate: any): Promise<void>;
     protected addChild(ChildClass: any, instanceName: string, nodeUpdate: any, edgeUpdate?: any): Promise<any>;
 }
@@ -254,6 +265,7 @@ export declare class TreatmentBinary extends PDFSNode {
     private get dataMetrics();
     private checkDataAccess;
     private checkPDOSNodeExistsAndCreateIfNot;
+    private createDataGroup;
     syncData(): Promise<void>;
 }
 

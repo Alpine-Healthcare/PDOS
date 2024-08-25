@@ -50,6 +50,7 @@ export class Core {
     private delayedInit : any = [];
     public started: boolean = false;
     public isRPCServer : boolean = false;
+    public isComputeNode: boolean = false;
 
     constructor(private config : any) {
       mainCore = this;
@@ -58,6 +59,8 @@ export class Core {
       this.constants = new ConstantsManager();
       coreConstants = this.constants
       this.addConstantListeners();
+
+      this.isComputeNode = this.config.isComputeNode ?? false;
 
       console.log("# jscore config : ", config);
     }

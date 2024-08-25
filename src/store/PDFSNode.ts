@@ -6,6 +6,7 @@ import { NetworkMapper } from "./NetworkMapper";
 import { addToPdfs, getFromPdfs } from "./Pdfs";
 import { logger } from "../utils/logger";
 import { log } from "console";
+import { acquireMutexForUser, getUserMutex, releaseMutex } from "../utils/mutex";
 
 export default class PDFSNode {
   public _nodeType = ""
@@ -172,13 +173,64 @@ export default class PDFSNode {
     )
   }
 
+  protected async getUserMutex() {
+    const userMutex = await acquireMutexForUser(this.core.stores.userAccount._rawNode.credentials[0].id)
+    console.log("got user mutex: ", userMutex)
+
+    if (userMutex) {
+      return true
+    }
+
+    // if we don't get the mutex poll until we do and refresh the tree
+    const getMutex = async () => {
+      await new Promise((resolve: any) => {
+        setTimeout(async () => {
+          const mutex = await acquireMutexForUser(this.core.stores.userAccount._rawNode.credentials[0].id)
+          if (mutex) {
+            return resolve()
+          } else {
+            return await getMutex()
+          }
+        }, 1000)
+      })
+    }
+
+    await getMutex()
+    await this.core.stores.userAccount.refreshPDOSTree()
+    await this.releaseMutex()
+
+    return false
+
+  }
+
+  protected async releaseMutex() {
+    const release  = await releaseMutex(this.core.stores.userAccount._rawNode.credentials[0].id)
+  }
+
   protected async update(rawNodeUpdate: any) {
+
+    if (!await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()) {
+      console.log("returning!!! after cehcking pdos tree")
+      return
+    }
+
+
+    if (!this.core.isComputeNode && !await this.getUserMutex()) {
+      console.log("didn't get user mutex")
+      return
+    }
+
+
     this._rawNodeUpdate = rawNodeUpdate 
     this._hash=""
     const previousTreePath = [...this._treePathInclusive.slice(0,-1)]
     await this.node
     await this.refreshTree(previousTreePath)
     this._rawNodeUpdate = {}
+
+    if (!this.core.isComputeNode) {
+      await this.releaseMutex()
+    }
   }
 
   protected async addChild(
