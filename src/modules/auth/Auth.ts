@@ -31,14 +31,15 @@ export default class Auth extends Module {
 
   public async setAccessPackage(accessPackage: any) {
     this.accessPackage = accessPackage
+    console.log("this.accessPackage: ", this.accessPackage)
     if (this.accessPackage === "test") {
       const userRes = await axios.get(gateway +"/pdos/users/" + credential_id)
       const user = userRes.data
-      console.log("user: ", user)
-      console.log("user[1].hash_id: ", user[1].hash_id)
       this.core.stores.userAccount.initUser(user[1].hash_id)
     } else {
-      this.core.stores.userAccount.initUser(this.accessPackage)
+      const userRes = await axios.get(gateway +"/pdos/users/" + this.accessPackage)
+      const user = userRes.data
+      this.core.stores.userAccount.initUser(user[1].hash_id)
     }
   }
 
