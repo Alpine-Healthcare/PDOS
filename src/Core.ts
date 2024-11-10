@@ -1,5 +1,5 @@
 
-import { reaction, observable, makeAutoObservable, autorun } from "mobx";
+import { reaction, makeAutoObservable } from "mobx";
 
 /**
  * Modules 
@@ -8,11 +8,6 @@ import MapConfig from "./modules/Map.config";
 import Module from "./modules/Module";
 import ModuleManager from "./modules/ModuleManager";
 
-/**
- * App
- */
-import AppConfig from "./apps/App.config";
-import AppManager from "./apps/AppManager";
 
 /**
  * Constants
@@ -23,6 +18,7 @@ import UserAccount from "./store/UserAccount";
 export let coreConstants: ConstantsManager;
 
 import { configure } from "mobx"
+import PDFSNode from "./store/PDFSNode";
 
 configure({
     enforceActions: "never",
@@ -50,18 +46,14 @@ interface CoreConfig {
 }
 
 export class Core { 
+    private static root = UserAccount
 
     public constants: ConstantsManager;
     public modules: ModuleManager = {};
-    public apps: AppManager = {};
+
+    public root: PDFSNode | undefined;
+
     public stores: any = {};
-
-    public rpc: any;
-    public static injectStore: any = []
-    public static injectLib = []
-
-
-    public libs = {};
 
     private delayedInit : any = [];
     public started: boolean = false;
@@ -77,21 +69,14 @@ export class Core {
 
       this.constants = new ConstantsManager();
       coreConstants = this.constants
-      this.addConstantListeners();
+
+      this.onAuthChanged();
 
       this.isComputeNode = this.config.isComputeNode ?? false;
       this.gatewayURL = this.config.gatewayURL ?? ''
       this.test = this.config.test ?? {}
 
-      console.log("# jscore config : ", config);
-    }
-
-    /*************************
-     * Jscore Constant Reactors
-     *************************/
-
-    private addConstantListeners(){
-      this.onAuthChanged();
+      console.log("# pdos config : ", config);
     }
 
     private async onAuthChanged(){
@@ -195,8 +180,6 @@ export class Core {
         await Promise.all(loadedModules);
 
         await this.startStores();
-        await this.startLibs();
-        await this.startApps();
 
         //Run callbacks for anyone who is waiting for everything to start up.
         await this.postStart();
@@ -244,104 +227,19 @@ export class Core {
 
     private async startStores(){
       //start our stores or any injected class (classes that are using the @jscore)
-      Core.injectStore.forEach((inject : any) => {
 
-        const capitalizeFirstLetter = (word: string) =>  {
-          return word.charAt(0).toLowerCase() + word.slice(1);
-        }
-          
-        if (inject.name) {
-            this.stores[capitalizeFirstLetter(inject.name)] = new inject(this);
-        } else {
-            this.stores[inject.constructor.name] = new inject.constructor(this);
-            this.stores[inject.constructor.name]._();
-        }
-      })
-
-    }
-
-    private async resetStores(){
-      (Core as any).storeInjections.forEach((inject : any) => {
-
-        if (!inject) {
-            return;
-        }
-
-        this.stores[inject.constructor.name.toLowerCase()]._();
-      })
-    }
-
-    /*************************
-     * App Lifecycle Methods 
-     *************************/
-
-    private async startApps(){
-      if (!this.config.apps) {
-        return
+      const capitalizeFirstLetter = (word: string) =>  {
+        return word.charAt(0).toLowerCase() + word.slice(1);
+      }
+        
+      if (Core.root.name) {
+          this.stores[capitalizeFirstLetter(Core.root.name)] = new Core.root(this);
+      } else {
+          this.stores[Core.root.constructor.name] = new Core.root(this);
+          this.stores[Core.root.constructor.name]._();
       }
 
-      this.config.apps.forEach(async (appConfig: any) => {
-        const app = (AppConfig as any)[appConfig.name]
-
-        if (!app) {
-          console.log(`# No app found - ${appConfig.name}`)
-        }
-
-        if (appConfig.dependencies && appConfig.dependencies.length > 0) {
-          const isReadyModules: Module[] = appConfig.dependencies
-            .filter((dependencyName: any) => (this.modules as any)[dependencyName])
-            .map((dependencyName: any) => (this.modules as any)[dependencyName]
-          )
-
-          const initializedApp = await app.init(this, appConfig.name, appConfig.config, appConfig.dependencies);
-
-          autorun(async () => {
-            let isReady = true
-            for (let module of isReadyModules) {
-              isReady = isReady && module.isReady
-            }
-
-            if (isReady) {
-              await initializedApp.start()
-              console.log(`# ${appConfig.name} - started`)
-            }
-
-          })
-
-          console.log(`# ${appConfig.name} - waiting for module(s) ready state`)
-        } else {
-          //Initialize the module and add to core
-          const initializedApp = await app.init(this, appConfig.name, appConfig.config, appConfig.dependencies);
-          await initializedApp.start()
-
-          console.log(`# ${appConfig.name} - started`)
-        }
-
-      })
-    }
-
-    /*************************
-     * Lib Lifecycle Methods 
-     *************************/
-
-    private async startLibs(){
-
-      //start our stores or any injected class (classes that are using the @jscore)
-      Core.injectLib.forEach((inject : any) => {
-          if (inject.name) {
-              (this.libs as any)[inject.name] = new inject.constructor(this)
-          } else {
-              (this.libs as any)[inject.constructor.name] = new inject.constructor(this);
-          }
-      })
-    }
-
-    private async resetLibs() {
-      this.startStores();
     }
 
 }
-
-Core.injectStore = [UserAccount];
-Core.injectLib = [];
 

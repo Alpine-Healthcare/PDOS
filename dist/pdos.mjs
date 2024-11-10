@@ -6240,25 +6240,26 @@ axios.formToJSON = (thing) => formDataToJSON(utils$1.isHTMLForm(thing) ? new For
 axios.getAdapter = adapters.getAdapter;
 axios.HttpStatusCode = HttpStatusCode;
 axios.default = axios;
-const credential_id = "7MGDjqEgFKak2CvuVXphWQ";
 class Auth extends Module {
   constructor(core, config) {
     super(core);
-    __publicField(this, "accessPackage");
-    __publicField(this, "userAccountRaw");
+    __publicField(this, "credentialId", null);
     this.config = config;
   }
-  async initializeUser(accessPackage) {
-    this.setAccessPackage(accessPackage);
+  async initializeUser(credentialId) {
+    this.setCredentialId(credentialId);
   }
-  async setAccessPackage(accessPackage) {
-    this.accessPackage = accessPackage;
-    if (this.accessPackage === "test") {
-      const userRes = await axios.get(this.core.gatewayURL + "/pdos/users/" + credential_id);
+  async setCredentialId(credentialId) {
+    var _a;
+    this.credentialId = credentialId;
+    if (this.credentialId === "test") {
+      const initCredentialId = (_a = this.core.test) == null ? void 0 : _a.initCredentialId;
+      const userRes = await axios.get(this.core.gatewayURL + "/pdos/users/" + initCredentialId);
       const user = userRes.data;
+      console.log("user: ", user);
       this.core.stores.userAccount.initUser(user[1].hash_id);
     } else {
-      const userRes = await axios.get(this.core.gatewayURL + "/pdos/users/" + this.accessPackage);
+      const userRes = await axios.get(this.core.gatewayURL + "/pdos/users/" + this.credentialId);
       const user = userRes.data;
       this.core.stores.userAccount.initUser(user[1].hash_id);
     }
@@ -6290,7 +6291,6 @@ class DataRequest extends Module {
     if (metrics.length === 0) {
       return;
     }
-    console.log("metrics: ", metrics);
     await this.HealthKit.requestAuthorization(metrics.map((metric) => this.MetricMap[metric]));
   }
   async getTodaysValue(metric) {
@@ -6299,14 +6299,12 @@ class DataRequest extends Module {
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(today);
     endOfDay.setHours(23, 59, 59, 999);
-    console.log("quering");
     const response = await this.HealthKit.queryQuantitySamples(this.MetricMap[metric], {
       from: startOfDay,
       to: endOfDay
     });
     if (response.length > 0) {
       const quantity = response[0].quantity;
-      console.log("quantity: ", quantity);
       return quantity;
     }
     return 0;
@@ -6318,7 +6316,6 @@ const MapConfig = {
   auth: Auth,
   dataRequest: DataRequest
 };
-const AppConfig = {};
 class Authentication extends Constant {
   constructor() {
     super();
@@ -6402,34 +6399,34 @@ const addToPdfs = async (treePath, newNodeData, newNodeType) => {
     oldTreePath: [...treePath, addResJson.new_node.hash_id]
   };
 };
-const getUserHashId = async (credential_id2) => {
-  const userRes = await axios.get(pdos().gatewayURL + "/pdos/users/" + credential_id2);
+const getUserHashId = async (credential_id) => {
+  const userRes = await axios.get(pdos().gatewayURL + "/pdos/users/" + credential_id);
   const user = userRes.data;
   return user[1].hash_id;
 };
-const getUserMutex = async (credential_id2) => {
+const getUserMutex = async (credential_id) => {
   const mutex = await axios.get("/pdos/mutex", {
     params: {
-      credential_id: credential_id2
+      credential_id
     }
   });
   const mutexInfo = mutex.data;
   return mutexInfo;
 };
-const releaseMutex = async (credential_id2) => {
-  const releaseResp = await axios.get(pdos().gatewayURL + "/pdos/mutex/release", { params: { credential_id: credential_id2 } });
+const releaseMutex = async (credential_id) => {
+  const releaseResp = await axios.get(pdos().gatewayURL + "/pdos/mutex/release", { params: { credential_id } });
   if (releaseResp.data) ;
   return releaseResp.data;
 };
-const acquireMutexForUser = async (credential_id2) => {
-  const mutexInfo = await getUserMutex(credential_id2);
+const acquireMutexForUser = async (credential_id) => {
+  const mutexInfo = await getUserMutex(credential_id);
   if (!mutexInfo.acquired) {
     const timestamp = mutexInfo.timestamp;
     const timestampEpoch = new Date(timestamp).getTime();
     const nowEpoch = (/* @__PURE__ */ new Date()).getTime();
     if (nowEpoch - timestampEpoch > 3e4) {
-      await releaseMutex(credential_id2);
-      const mutexInfo2 = await getUserMutex(credential_id2);
+      await releaseMutex(credential_id);
+      const mutexInfo2 = await getUserMutex(credential_id);
       if (!mutexInfo2.acquired) {
         return false;
       }
@@ -6549,7 +6546,6 @@ class PDFSNode {
   }
   async getUserMutex() {
     const userMutex = await acquireMutexForUser(this.core.stores.userAccount._rawNode.credentials[0].id);
-    console.log("got user mutex: ", userMutex);
     if (userMutex) {
       return true;
     }
@@ -6575,11 +6571,9 @@ class PDFSNode {
   }
   async update(rawNodeUpdate) {
     if (!await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()) {
-      console.log("returning!!! after cehcking pdos tree");
       return;
     }
     if (!this.core.isComputeNode && !await this.getUserMutex()) {
-      console.log("didn't get user mutex");
       return;
     }
     this._rawNodeUpdate = rawNodeUpdate;
@@ -6656,7 +6650,6 @@ class DataManifest extends PDFSNode {
     return Object.values(this.edges).find((edge) => edge._rawNode.metric === metric);
   }
   async addDataGroup(dataMetric = "") {
-    console.log("adding data group for data metric: ", dataMetric);
     await this.addChild(
       DataGroup,
       toCamel(dataMetric),
@@ -6669,14 +6662,12 @@ class DataManifest extends PDFSNode {
 }
 __publicField(DataManifest, "_nodeType", "N_DataManifest");
 class Inbox extends PDFSNode {
-  constructor(core, treePath, instanceType, hash) {
+  constructor(core, treePath, _17, hash) {
     super(core, treePath, "N_Inbox", hash);
   }
   async addMessage(message) {
-    console.log("message: ", message);
     const newMessages = [...this._rawNode.unread_messages];
     newMessages.push(message);
-    console.log("newMEssages: ", newMessages);
     this.update({
       ...this._rawNode,
       "unread_messages": newMessages
@@ -6794,7 +6785,6 @@ class UserAccount extends PDFSNode {
   async checkPDOSTreeIsMostRecent() {
     const hashId = await getUserHashId(this._rawNode.credentials[0].id);
     if (hashId === this._hash) {
-      console.log("tree is teh same");
       return true;
     }
     this.edges = {};
@@ -6860,30 +6850,24 @@ const _Core = class _Core {
   constructor(config) {
     __publicField(this, "constants");
     __publicField(this, "modules", {});
-    __publicField(this, "apps", {});
+    __publicField(this, "root");
     __publicField(this, "stores", {});
-    __publicField(this, "rpc");
-    __publicField(this, "libs", {});
     __publicField(this, "delayedInit", []);
     __publicField(this, "started", false);
     __publicField(this, "isRPCServer", false);
     __publicField(this, "isComputeNode", false);
     __publicField(this, "gatewayURL", "");
+    __publicField(this, "test", {});
     this.config = config;
     mainCore = this;
     makeAutoObservable(this);
     this.constants = new ConstantsManager();
     this.constants;
-    this.addConstantListeners();
+    this.onAuthChanged();
     this.isComputeNode = this.config.isComputeNode ?? false;
     this.gatewayURL = this.config.gatewayURL ?? "";
-    console.log("# jscore config : ", config);
-  }
-  /*************************
-   * Jscore Constant Reactors
-   *************************/
-  addConstantListeners() {
-    this.onAuthChanged();
+    this.test = this.config.test ?? {};
+    console.log("# pdos config : ", config);
   }
   async onAuthChanged() {
     reaction(
@@ -6959,8 +6943,6 @@ const _Core = class _Core {
       });
       await Promise.all(loadedModules);
       await this.startStores();
-      await this.startLibs();
-      await this.startApps();
       await this.postStart();
       this.delayedInit.forEach((func) => func());
       console.log("# jscore : successfully started");
@@ -6997,82 +6979,19 @@ const _Core = class _Core {
    * Store Lifecycle Methods 
    *************************/
   async startStores() {
-    _Core.injectStore.forEach((inject) => {
-      const capitalizeFirstLetter = (word) => {
-        return word.charAt(0).toLowerCase() + word.slice(1);
-      };
-      if (inject.name) {
-        this.stores[capitalizeFirstLetter(inject.name)] = new inject(this);
-      } else {
-        this.stores[inject.constructor.name] = new inject.constructor(this);
-        this.stores[inject.constructor.name]._();
-      }
-    });
-  }
-  async resetStores() {
-    _Core.storeInjections.forEach((inject) => {
-      if (!inject) {
-        return;
-      }
-      this.stores[inject.constructor.name.toLowerCase()]._();
-    });
-  }
-  /*************************
-   * App Lifecycle Methods 
-   *************************/
-  async startApps() {
-    if (!this.config.apps) {
-      return;
+    const capitalizeFirstLetter = (word) => {
+      return word.charAt(0).toLowerCase() + word.slice(1);
+    };
+    if (_Core.root.name) {
+      this.stores[capitalizeFirstLetter(_Core.root.name)] = new _Core.root(this);
+    } else {
+      this.stores[_Core.root.constructor.name] = new _Core.root(this);
+      this.stores[_Core.root.constructor.name]._();
     }
-    this.config.apps.forEach(async (appConfig) => {
-      const app = AppConfig[appConfig.name];
-      if (!app) {
-        console.log(`# No app found - ${appConfig.name}`);
-      }
-      if (appConfig.dependencies && appConfig.dependencies.length > 0) {
-        const isReadyModules = appConfig.dependencies.filter((dependencyName) => this.modules[dependencyName]).map(
-          (dependencyName) => this.modules[dependencyName]
-        );
-        const initializedApp = await app.init(this, appConfig.name, appConfig.config, appConfig.dependencies);
-        autorun(async () => {
-          let isReady = true;
-          for (let module of isReadyModules) {
-            isReady = isReady && module.isReady;
-          }
-          if (isReady) {
-            await initializedApp.start();
-            console.log(`# ${appConfig.name} - started`);
-          }
-        });
-        console.log(`# ${appConfig.name} - waiting for module(s) ready state`);
-      } else {
-        const initializedApp = await app.init(this, appConfig.name, appConfig.config, appConfig.dependencies);
-        await initializedApp.start();
-        console.log(`# ${appConfig.name} - started`);
-      }
-    });
-  }
-  /*************************
-   * Lib Lifecycle Methods 
-   *************************/
-  async startLibs() {
-    _Core.injectLib.forEach((inject) => {
-      if (inject.name) {
-        this.libs[inject.name] = new inject.constructor(this);
-      } else {
-        this.libs[inject.constructor.name] = new inject.constructor(this);
-      }
-    });
-  }
-  async resetLibs() {
-    this.startStores();
   }
 };
-__publicField(_Core, "injectStore", []);
-__publicField(_Core, "injectLib", []);
+__publicField(_Core, "root", UserAccount);
 let Core = _Core;
-Core.injectStore = [UserAccount];
-Core.injectLib = [];
 export {
   Core,
   PDFSNode,

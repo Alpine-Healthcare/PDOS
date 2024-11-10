@@ -4,4 +4,4 @@ import PDFSNode from "./store/PDFSNode";
 import TreatmentBinary from "./store/TreatmentBinary";
 export { Core, traverseTree, PDFSNode, TreatmentBinary };
 export default pdos;
-//# sourceMappingURL=index.d.ts.map
+//# sourceMappingURL=index.js.map

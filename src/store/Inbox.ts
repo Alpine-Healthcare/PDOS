@@ -7,7 +7,7 @@ export default class Inbox extends PDFSNode {
   constructor(
     core : Core,
     treePath: string[],
-    instanceType: string | undefined,
+    _: string | undefined,
     hash?: string,
   ){
     super(core, treePath, "N_Inbox", hash )
