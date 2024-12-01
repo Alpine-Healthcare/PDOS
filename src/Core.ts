@@ -1,6 +1,8 @@
 
 import { reaction, makeAutoObservable } from "mobx";
 
+import PDFSNode from "./store/PDFSNode";
+
 /**
  * Modules 
  */
@@ -14,14 +16,15 @@ import ModuleManager from "./modules/ModuleManager";
  */
 import ConstantsManager from "./constants/ConstantsManager";
 import { AuthenticationState } from "./constants/Authentication";
-import UserAccount from "./store/UserAccount";
 export let coreConstants: ConstantsManager;
 
 import { configure } from "mobx"
-import PDFSNode from "./store/PDFSNode";
+
+import UserAccount from "./store/UserAccount";
+import { ConfigValidationError, ModuleNotFoundError } from "./Errors";
 
 configure({
-    enforceActions: "never",
+  enforceActions: "never",
 })
 
 let mainCore: Core;
@@ -29,20 +32,20 @@ let mainCore: Core;
 let pdos = () => mainCore 
 export default pdos;
 
-interface CoreTest {
+interface TestConfiguration {
   initCredentialId?: string
 }
 
-interface CoreConfig {
-  env: 'production' | 'development';
-  gatewayURL?: string;
-
-  test?: CoreTest 
-
-  modules: any;
-  apps?: any;
-
+interface Context {
+  gatewayURL: string;
   isComputeNode?: boolean;
+}
+
+interface CoreConfig {
+  env: 'production' | 'development' | 'test' ;
+  context: Context;
+  test?: TestConfiguration;
+  modules?: any;
 }
 
 export class Core { 
@@ -57,13 +60,14 @@ export class Core {
 
     private delayedInit : any = [];
     public started: boolean = false;
-    public isRPCServer : boolean = false;
-    public isComputeNode: boolean = false;
 
+    public isComputeNode: boolean = false;
     public gatewayURL: string = "";
-    public test: CoreTest = {};
+    public test: TestConfiguration = {};
 
     constructor(private config : CoreConfig) {
+      this.validateConfig(config);
+
       mainCore = this;
       makeAutoObservable(this);
 
@@ -72,11 +76,35 @@ export class Core {
 
       this.onAuthChanged();
 
-      this.isComputeNode = this.config.isComputeNode ?? false;
-      this.gatewayURL = this.config.gatewayURL ?? ''
-      this.test = this.config.test ?? {}
+      try {
+        this.isComputeNode = this.config.context.isComputeNode ?? false;
+        this.gatewayURL = this.config.context.gatewayURL ?? ''
+        this.test = this.config.test ?? {}
+      } catch {
+        throw new ConfigValidationError("Failed to parse context");
+      }
 
       console.log("# pdos config : ", config);
+    }
+
+    /**
+     * Assures that the instantiation object given to pdo is valid
+     * and will boot up a healthy instance of pdos
+     * 
+     * @param config Instantiation object given to pdos
+     */
+    private validateConfig(config: CoreConfig){
+
+      // Check the env that is requested is available
+      const acceptedEnvs = ['production', 'development', 'test'];
+      if (config.env && !acceptedEnvs.includes(config.env)){
+        throw new ConfigValidationError("Invalid environment given."); 
+      }
+
+    }
+
+    public get initConfig(){
+      return this.config
     }
 
     private async onAuthChanged(){
@@ -114,7 +142,6 @@ export class Core {
       // talk to sunny for more info 
 
       //Check our dependencies across our modules
-      try { 
         const independentModules: Array<String> = []
         const dependentModules: Array<String> = []
         const missingModuleDepdendencies = (modules: any) => {
@@ -154,6 +181,10 @@ export class Core {
           const moduleConfig = requestedModules[moduleName];
           const Module = (MapConfig as any)[moduleName];
 
+          if (!Module) {
+            throw new ModuleNotFoundError(`Module ${moduleName} not found in MapConfig`);
+          }
+
           //grab any injected dependencies
           let dependencies;
           if (dependencyInjection) {
@@ -185,11 +216,8 @@ export class Core {
         await this.postStart();
         this.delayedInit.forEach((func : any) => func())
 
-        console.log("# jscore : successfully started")
+        console.log("# pdos : successfully started")
         this.started = true;
-      } catch (e) {
-          throw e;
-      }
 
       return this;
     }

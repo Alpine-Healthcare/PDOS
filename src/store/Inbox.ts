@@ -16,14 +16,16 @@ export default class Inbox extends PDFSNode {
   public async addMessage(message: string){
     const newMessages = [ ...this._rawNode.unread_messages]
     newMessages.push(message)
-    this.update({
+    console.log("adding message")
+    await this.update({
       ...this._rawNode,
       "unread_messages": newMessages 
     })
+    console.log("added message")
   }
 
   public async clearMessages(){
-    this.update({
+    await this.update({
       ...this._rawNode,
       "unread_messages": [] 
     })

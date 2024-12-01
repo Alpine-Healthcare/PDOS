@@ -1,6 +1,8 @@
+"use strict";
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toStringTag]: { value: "Module" } });
 var niceErrors = {
   0: "Invalid value for configuration 'enforceActions', expected 'never', 'always' or 'observed'",
   1: function _(prop) {
@@ -7031,9 +7033,7 @@ const _Core = class _Core {
 };
 __publicField(_Core, "root", UserAccount);
 let Core = _Core;
-export {
-  Core,
-  PDFSNode,
-  pdos as default,
-  traverseTree
-};
+exports.Core = Core;
+exports.PDFSNode = PDFSNode;
+exports.default = pdos;
+exports.traverseTree = traverseTree;

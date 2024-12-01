@@ -1,24 +1,25 @@
 
-import { makeObservable, observable, reaction } from "mobx";
+import { makeObservable, observable, reaction, toJS } from "mobx";
 import { Core } from "../Core";
 import { getEdgeInfo } from "./Model";
 import { NetworkMapper } from "./NetworkMapper";
 import { addToPdfs, getFromPdfs } from "./Pdfs";
 import { logger } from "../utils/logger";
-import { log } from "console";
-import { acquireMutexForUser, getUserMutex, releaseMutex } from "../utils/mutex";
+import { acquireMutexForUser, releaseMutex } from "../utils/mutex";
 
 export default class PDFSNode {
   public _nodeType = ""
+
+  protected _hash: string = ""
   public _treePath: string[] = []
   public _treePathInclusive: string[] = []
 
-  protected _hash: string = ""
+
   protected _childrenRefreshMap: { [key: string]: any } = {}
-
   public edges: { [key: string]: any } = {}
-  public _rawNode: any = {};
+  public edgeArray: any[] = []
 
+  public _rawNode: any = {};
   public _rawNodeUpdate: any = {};
 
   constructor(protected core : Core, treePath: string[], nodeType: string, hash?: string ){
@@ -46,6 +47,17 @@ export default class PDFSNode {
       })
     })
 
+  }
+
+  public getData(){
+    return {
+      hashId: this._hash,
+      rawNode: this._rawNode
+    }
+  }
+
+  public getChildren() {
+    return Object.values(this.edges)
   }
 
   protected onNodeLoad(){}
@@ -158,6 +170,7 @@ export default class PDFSNode {
         await child.refreshTree(this._treePathInclusive)
 
         this.edges[key] = child
+        this.edgeArray.push(child)
         logger.tree("Finished adding child node", Object.keys(this.edges))
 
         await child.refreshChildren
@@ -279,6 +292,8 @@ export default class PDFSNode {
       edgeName += `_${instanceName}`
     }
     this.edges[edgeName] = newChild
+    this.edgeArray.push(newChild)
+
 
     /**
      * Refreshes the children of the new child

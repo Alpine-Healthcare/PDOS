@@ -1,11 +1,19 @@
 {
   "name": "@alpinehealthcare/pdos",
-  "version": "0.0.3",
+  "version": "0.0.4",
+  "license": "MIT",
   "outputPath": "dist",
-  "main": "dist/pdos.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/pdos.mjs", 
+      "require": "./dist/pdos.umd.js"
+    }
+  },
+  "type":"commonjs",
   "scripts": {
     "watch": "tsc -w",
-    "build": "tsc && vite build"
+    "build": "tsc && vite build",
+    "test": "jest --watchAll"
   },
   "dependencies": {
     "axios": "^1.7.2",
@@ -16,10 +24,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@babel/preset-env": "^7.26.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.2.0",
     "@types/react": "~18.2.45",
     "jest": "^29.2.1",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.5.4",
     "vite": "^5.4.0",
     "vite-plugin-dts": "^4.0.2"

@@ -13,7 +13,7 @@ export default class Auth extends Module {
   }
 
   public async initializeUser(credentialId: string) {
-    this.setCredentialId(credentialId)
+    await this.setCredentialId(credentialId)
   }
 
   public async setCredentialId(credentialId: string) {
@@ -22,12 +22,11 @@ export default class Auth extends Module {
       const initCredentialId = this.core.test?.initCredentialId
       const userRes = await axios.get(this.core.gatewayURL +"/pdos/users/" + initCredentialId)
       const user = userRes.data
-      console.log("user: ", user)
-      this.core.stores.userAccount.initUser(user[1].hash_id)
+      await this.core.stores.userAccount.initUser(user[1].hash_id)
     } else {
       const userRes = await axios.get(this.core.gatewayURL +"/pdos/users/" + this.credentialId)
       const user = userRes.data
-      this.core.stores.userAccount.initUser(user[1].hash_id)
+      await this.core.stores.userAccount.initUser(user[1].hash_id)
     }
   }
 

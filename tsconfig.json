@@ -2,6 +2,7 @@
     "compilerOptions": {
       "target": "ESNext",                                // Target the latest version of JavaScript.
       "module": "ESNext",                                // Use ES modules.
+      "types": ["node", "jest"],
       "lib": ["ESNext", "DOM"],                          // Include the ESNext and DOM libraries for web compatibility.
       "jsx": "react",                                    // Support JSX syntax for React.
       "declaration": true,                               // Generate declaration files (.d.ts).
@@ -18,5 +19,5 @@
       "isolatedModules": true                            // Ensure that each file is treated as an isolated module.
     },
     "include": ["src/**/*"],                             // Include all source files in the src directory.
-    "exclude": ["node_modules", "dist", "build"]         // Exclude node_modules and build output directories.
+    "exclude": ["**/*.test.*","node_modules", "dist", "build"]         // Exclude node_modules and build output directories.
 }
