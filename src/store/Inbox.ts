@@ -13,15 +13,22 @@ export default class Inbox extends PDFSNode {
     super(core, treePath, "N_Inbox", hash )
   }
 
-  public async addMessage(message: string){
+  public async addMessage(sender: string){
+    console.log("adding message!")
     const newMessages = [ ...this._rawNode.unread_messages]
-    newMessages.push(message)
-    console.log("adding message")
+    newMessages.push({
+      message: sender,
+      sender: "system"
+    })
+    try {
+      console.log("runnign update")
     await this.update({
       ...this._rawNode,
       "unread_messages": newMessages 
     })
-    console.log("added message")
+    } catch (e) {
+      console.log("error: ", e)
+    }
   }
 
   public async clearMessages(){

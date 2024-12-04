@@ -1,6 +1,6 @@
 {
   "name": "@alpinehealthcare/pdos",
-  "version": "0.0.4",
+  "version": "0.0.44",
   "license": "MIT",
   "outputPath": "dist",
   "exports": {

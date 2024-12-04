@@ -6583,6 +6583,7 @@ class PDFSNode {
   }
   async update(rawNodeUpdate) {
     if (!await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()) {
+      console.log("pdos is not most recent");
       return;
     }
     if (!this.core.isComputeNode && !await this.getUserMutex()) {
@@ -6627,6 +6628,12 @@ class PDFSNode {
     this.edges[edgeName] = newChild;
     this.edgeArray.push(newChild);
     await newChild.refreshChildren;
+    console.log("fething new userhash");
+    try {
+      await this.core.tree.root.updateUserHash();
+    } catch (e) {
+      console.log("error updating user hash", e);
+    }
     return newChild;
   }
 }
@@ -6678,15 +6685,22 @@ class Inbox extends PDFSNode {
   constructor(core, treePath, _17, hash) {
     super(core, treePath, "N_Inbox", hash);
   }
-  async addMessage(message) {
+  async addMessage(sender) {
+    console.log("adding message!");
     const newMessages = [...this._rawNode.unread_messages];
-    newMessages.push(message);
-    console.log("adding message");
-    await this.update({
-      ...this._rawNode,
-      "unread_messages": newMessages
+    newMessages.push({
+      message: sender,
+      sender: "system"
     });
-    console.log("added message");
+    try {
+      console.log("runnign update");
+      await this.update({
+        ...this._rawNode,
+        "unread_messages": newMessages
+      });
+    } catch (e) {
+      console.log("error: ", e);
+    }
   }
   async clearMessages() {
     await this.update({
@@ -6734,10 +6748,17 @@ class TreatmentBinary extends PDFSNode {
   }
 }
 __publicField(TreatmentBinary, "_nodeType", "N_TreatmentBinary");
+class TreatmentInstance extends PDFSNode {
+  constructor(core, treePath, instanceType, hash) {
+    super(core, treePath, "N_TreatmentInstance_" + instanceType, hash);
+  }
+}
+__publicField(TreatmentInstance, "_nodeType", "N_TreatmentInstance_I");
 class Treatment extends PDFSNode {
   constructor(core, treePath, instanceType, hash) {
     super(core, treePath, "N_Treatment_" + instanceType, hash);
     addNodeToNetworkMapper("TreatmentBinary", TreatmentBinary);
+    addNodeToNetworkMapper("TreatmentInstance", TreatmentInstance);
   }
   async disable() {
     this.update({
@@ -6748,6 +6769,17 @@ class Treatment extends PDFSNode {
     this.update({
       "is_active": true
     });
+  }
+  async addInstance(messages = []) {
+    const treatmentInstanceName = (/* @__PURE__ */ new Date()).toISOString();
+    await this.addChild(
+      TreatmentInstance,
+      treatmentInstanceName,
+      {
+        "messages": messages,
+        "date": treatmentInstanceName
+      }
+    );
   }
 }
 __publicField(Treatment, "_nodeType", "N_Treatment_I");
@@ -6799,12 +6831,17 @@ class UserAccount extends PDFSNode {
   }
   async checkPDOSTreeIsMostRecent() {
     const hashId = await getUserHashId(this._rawNode.credentials[0].id);
+    console.log("hashId: ", hashId);
+    console.log("this._hash: ", this._hash);
     if (hashId === this._hash) {
       return true;
     }
     this.edges = {};
     await this.initUser(hashId);
     return false;
+  }
+  async updateUserHash() {
+    this._hash = await getUserHashId(this._rawNode.credentials[0].id);
   }
   async refreshPDOSTree() {
     const hashId = await getUserHashId(this._rawNode.credentials[0].id);
@@ -6854,6 +6891,7 @@ class UserAccount extends PDFSNode {
       await updateFunctions[i]();
     }
     this.isRefreshing = false;
+    this._hash = await getUserHashId(this._rawNode.credentials[0].id);
   }
 }
 class ConfigValidationError extends Error {
@@ -6875,9 +6913,9 @@ let mainCore;
 let pdos = () => mainCore;
 const _Core = class _Core {
   constructor(config) {
+    __publicField(this, "root");
     __publicField(this, "constants");
     __publicField(this, "modules", {});
-    __publicField(this, "root");
     __publicField(this, "stores", {});
     __publicField(this, "delayedInit", []);
     __publicField(this, "started", false);
@@ -7023,15 +7061,17 @@ const _Core = class _Core {
     const capitalizeFirstLetter = (word) => {
       return word.charAt(0).toLowerCase() + word.slice(1);
     };
-    if (_Core.root.name) {
-      this.stores[capitalizeFirstLetter(_Core.root.name)] = new _Core.root(this);
+    this.root = new _Core.rootInstance(this);
+    if (_Core.rootInstance.name) {
+      this.stores[capitalizeFirstLetter(_Core.rootInstance.name)] = this.root;
     } else {
-      this.stores[_Core.root.constructor.name] = new _Core.root(this);
-      this.stores[_Core.root.constructor.name]._();
+      this.stores[_Core.rootInstance.constructor.name] = this.root;
+      this.stores[_Core.rootInstance.constructor.name]._();
     }
+    this.stores["root"] = this.root;
   }
 };
-__publicField(_Core, "root", UserAccount);
+__publicField(_Core, "rootInstance", UserAccount);
 let Core = _Core;
 exports.Core = Core;
 exports.PDFSNode = PDFSNode;

@@ -222,6 +222,7 @@ export default class PDFSNode {
   protected async update(rawNodeUpdate: any) {
 
     if (!await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()) {
+      console.log("pdos is not most recent")
       return
     }
 
@@ -299,6 +300,14 @@ export default class PDFSNode {
      * Refreshes the children of the new child
      */
     await newChild.refreshChildren
+
+    console.log("fething new userhash")
+    try {
+      await this.core.tree.root.updateUserHash()
+
+    } catch (e) {
+      console.log("error updating user hash", e)
+    }
 
   
     return newChild

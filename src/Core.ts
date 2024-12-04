@@ -49,12 +49,11 @@ interface CoreConfig {
 }
 
 export class Core { 
-    private static root = UserAccount
+    private static rootInstance = UserAccount
+    public root: PDFSNode | undefined = undefined
 
     public constants: ConstantsManager;
     public modules: ModuleManager = {};
-
-    public root: PDFSNode | undefined;
 
     public stores: any = {};
 
@@ -64,6 +63,7 @@ export class Core {
     public isComputeNode: boolean = false;
     public gatewayURL: string = "";
     public test: TestConfiguration = {};
+
 
     constructor(private config : CoreConfig) {
       this.validateConfig(config);
@@ -259,13 +259,17 @@ export class Core {
       const capitalizeFirstLetter = (word: string) =>  {
         return word.charAt(0).toLowerCase() + word.slice(1);
       }
+
+      this.root = new Core.rootInstance(this)
         
-      if (Core.root.name) {
-          this.stores[capitalizeFirstLetter(Core.root.name)] = new Core.root(this);
+      if (Core.rootInstance.name) {
+          this.stores[capitalizeFirstLetter(Core.rootInstance.name)] = this.root;
       } else {
-          this.stores[Core.root.constructor.name] = new Core.root(this);
-          this.stores[Core.root.constructor.name]._();
+          this.stores[Core.rootInstance.constructor.name] = this.root;
+          this.stores[Core.rootInstance.constructor.name]._();
       }
+
+      this.stores['root'] = this.root;
 
     }
 

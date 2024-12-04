@@ -29,12 +29,18 @@ export default class UserAccount extends PDFSNode {
 
   public async checkPDOSTreeIsMostRecent(){
     const hashId = await getUserHashId(this._rawNode.credentials[0].id)
+    console.log("hashId: ", hashId)
+    console.log("this._hash: ", this._hash)
     if (hashId === this._hash) {
       return true
     }
     this.edges = {}
     await this.initUser(hashId)
     return false
+  }
+  
+  public async updateUserHash(){
+    this._hash = await getUserHashId(this._rawNode.credentials[0].id)
   }
 
   public async refreshPDOSTree(){
@@ -108,7 +114,7 @@ export default class UserAccount extends PDFSNode {
     }
 
     this.isRefreshing = false
-
+    this._hash = await getUserHashId(this._rawNode.credentials[0].id)
   }
 
 }

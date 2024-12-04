@@ -71,10 +71,10 @@ declare interface Context {
 
 export declare class Core {
     private config;
-    private static root;
+    private static rootInstance;
+    root: PDFSNode | undefined;
     constants: ConstantsManager;
     modules: ModuleManager;
-    root: PDFSNode | undefined;
     stores: any;
     private delayedInit;
     started: boolean;
