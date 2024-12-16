@@ -27,7 +27,7 @@ export default class TreatmentBinary extends PDFSNode {
 
   private checkDataAccess() {
     this.core?.modules?.dataRequest?.checkAccess(this.dataMetrics as any)
-  }
+  };
 
   private async createDataGroup(metric: string) {
     const rootNode = this.core.stores.userAccount
@@ -52,6 +52,7 @@ export default class TreatmentBinary extends PDFSNode {
       }
 
       const dataGroup = getDataGroup(metric)
+
       await dataGroup.updateData()
     }
   }

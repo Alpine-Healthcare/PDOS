@@ -9,6 +9,9 @@ type DependencyInjection = {
   reactNativeHealthKit: any
 };
 
+const convertCamelCaseToSnakeCase = (str: string) => {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
 
 export default class DataRequest extends Module {
   private HealthKit: any;
@@ -20,11 +23,13 @@ export default class DataRequest extends Module {
     super(core);
     this.reactNativeHealthKit = dependencyInjection.reactNativeHealthKit;
     this.HealthKit = this.reactNativeHealthKit.default;
-    this.MetricMap = {
-      "body_mass": this.reactNativeHealthKit.HKQuantityTypeIdentifier.bodyMass,
-      "step_count": this.reactNativeHealthKit.HKQuantityTypeIdentifier.stepCount,
-      "blood_glucose": this.reactNativeHealthKit.HKQuantityTypeIdentifier.bloodGlucose,
-    }
+
+    // Load the MetricMap with the keys from the reactNativeHealthKit.HKQuantityTypeIdentifier object
+    Object.keys(this.reactNativeHealthKit.HKQuantityTypeIdentifier).forEach(key => {
+      const pascalCaseKey = convertCamelCaseToSnakeCase(key);
+      this.MetricMap[pascalCaseKey] = this.reactNativeHealthKit.HKQuantityTypeIdentifier[key];
+    });
+
   }
 
   protected async start(): Promise<void> {
@@ -37,14 +42,20 @@ export default class DataRequest extends Module {
   }
 
   public async checkAccess(metrics : (any)[]) : Promise<void> {
-    if (metrics.length === 0) {
-      return;
-    }
+    try {
+      if (metrics.length === 0) {
+        return;
+      }
 
-    const response = await this.HealthKit.requestAuthorization(metrics.map(metric => this.MetricMap[metric])); 
+      await this.HealthKit.requestAuthorization(metrics.map(metric => this.MetricMap[metric])); 
+
+    } catch (e) {
+      console.error("Error in getting access to metrics")
+    }
   }
 
   public async getTodaysValue(metric : string) : Promise<number | undefined> {
+
     const today = new Date();
     const startOfDay = new Date(today);
     startOfDay.setHours(0, 0, 0, 0);

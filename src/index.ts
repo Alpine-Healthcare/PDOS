@@ -1,6 +1,24 @@
 import pdos, { Core } from "./Core";
-import { traverseTree } from "./store/NetworkMapper";
+import { getAllRecords, sync } from "./actions/Data";
+import { clearMessages, getMessages } from "./actions/Inbox";
+import { addTreatment, getActiveTreatments, getTreatmentInstances } from "./actions/Treatments";
 import PDFSNode from "./store/PDFSNode";
 
-export { Core, traverseTree, PDFSNode }
+export const actions = {
+  inbox: {
+    getMessages,
+    clearMessages,
+  },
+  treatments: {
+    getActiveTreatments,
+    getTreatmentInstances,
+    addTreatment
+  },
+  data: {
+    sync,
+    getAllRecords
+  }
+}
+
+export { Core, PDFSNode }
 export default pdos;

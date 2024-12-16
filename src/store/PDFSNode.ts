@@ -10,7 +10,7 @@ import { acquireMutexForUser, releaseMutex } from "../utils/mutex";
 export default class PDFSNode {
   public _nodeType = ""
 
-  protected _hash: string = ""
+  public _hash: string = ""
   public _treePath: string[] = []
   public _treePathInclusive: string[] = []
 
@@ -167,7 +167,7 @@ export default class PDFSNode {
         )
         await child.node
 
-        await child.refreshTree(this._treePathInclusive)
+        //await child.refreshTree(this._treePathInclusive)
 
         this.edges[key] = child
         this.edgeArray.push(child)
@@ -221,11 +221,7 @@ export default class PDFSNode {
 
   protected async update(rawNodeUpdate: any) {
 
-    if (!await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()) {
-      console.log("pdos is not most recent")
-      return
-    }
-
+    await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()
 
     if (!this.core.isComputeNode && !await this.getUserMutex()) {
       return
@@ -242,6 +238,8 @@ export default class PDFSNode {
     if (!this.core.isComputeNode) {
       await this.releaseMutex()
     }
+
+
   }
 
   protected async addChild(
@@ -251,6 +249,7 @@ export default class PDFSNode {
     edgeUpdate?: any
   ) {
 
+    await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()
 
     /**
      * Create a new child node along with 
@@ -303,8 +302,7 @@ export default class PDFSNode {
 
     console.log("fething new userhash")
     try {
-      await this.core.tree.root.updateUserHash()
-
+      //await this.core.tree.root.updateUserHash()
     } catch (e) {
       console.log("error updating user hash", e)
     }

@@ -16,6 +16,10 @@ export default class DataGroup extends PDFSNode {
   public async updateData() {
     const updateValue = await this.core?.modules?.dataRequest?.getTodaysValue(this._rawNode.metric)
 
+    if (!updateValue) {
+      return
+    }
+
     if (updateValue !== undefined) {
       const records = this._rawNode.records
       records[new Date().getTime()] = updateValue

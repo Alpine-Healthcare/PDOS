@@ -6268,6 +6268,9 @@ System.register("pdos", [], function(exports, module) {
           }
         }
       }
+      const convertCamelCaseToSnakeCase = (str) => {
+        return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+      };
       class DataRequest extends Module {
         constructor(core, config, dependencyInjection) {
           super(core);
@@ -6278,11 +6281,10 @@ System.register("pdos", [], function(exports, module) {
           this.dependencyInjection = dependencyInjection;
           this.reactNativeHealthKit = dependencyInjection.reactNativeHealthKit;
           this.HealthKit = this.reactNativeHealthKit.default;
-          this.MetricMap = {
-            "body_mass": this.reactNativeHealthKit.HKQuantityTypeIdentifier.bodyMass,
-            "step_count": this.reactNativeHealthKit.HKQuantityTypeIdentifier.stepCount,
-            "blood_glucose": this.reactNativeHealthKit.HKQuantityTypeIdentifier.bloodGlucose
-          };
+          Object.keys(this.reactNativeHealthKit.HKQuantityTypeIdentifier).forEach((key) => {
+            const pascalCaseKey = convertCamelCaseToSnakeCase(key);
+            this.MetricMap[pascalCaseKey] = this.reactNativeHealthKit.HKQuantityTypeIdentifier[key];
+          });
         }
         async start() {
           const isAvailable = await this.reactNativeHealthKit.default.isHealthDataAvailable();
@@ -6357,7 +6359,7 @@ System.register("pdos", [], function(exports, module) {
       };
       const NetworkMapper = {};
       const addNodeToNetworkMapper = (nodeType, nodeClass) => NetworkMapper[nodeType] = nodeClass;
-      const traverseTree = exports("traverseTree", (root, callback) => {
+      const traverseTree = (root, callback) => {
         callback(root);
         const edgeNodes = root.edges ? Object.values(root.edges) : void 0;
         if (edgeNodes) {
@@ -6365,7 +6367,7 @@ System.register("pdos", [], function(exports, module) {
             traverseTree(node, callback);
           });
         }
-      });
+      };
       const doesPDFSNodeExist = (name, root) => {
         let foundNode = false;
         traverseTree(root, (node) => {
@@ -6408,7 +6410,7 @@ System.register("pdos", [], function(exports, module) {
         return user[1].hash_id;
       };
       const getUserMutex = async (credential_id) => {
-        const mutex = await axios.get("/pdos/mutex", {
+        const mutex = await axios.get(pdos().gatewayURL + "/pdos/mutex", {
           params: {
             credential_id
           }
@@ -6417,9 +6419,13 @@ System.register("pdos", [], function(exports, module) {
         return mutexInfo;
       };
       const releaseMutex = async (credential_id) => {
-        const releaseResp = await axios.get(pdos().gatewayURL + "/pdos/mutex/release", { params: { credential_id } });
-        if (releaseResp.data) ;
-        return releaseResp.data;
+        try {
+          const releaseResp = await axios.get(pdos().gatewayURL + "/pdos/mutex/release", { params: { credential_id } });
+          return releaseResp.data;
+        } catch (e) {
+          console.log("error releasing mutex: ", e);
+          return false;
+        }
       };
       const acquireMutexForUser = async (credential_id) => {
         const mutexInfo = await getUserMutex(credential_id);
@@ -6427,7 +6433,7 @@ System.register("pdos", [], function(exports, module) {
           const timestamp = mutexInfo.timestamp;
           const timestampEpoch = new Date(timestamp).getTime();
           const nowEpoch = (/* @__PURE__ */ new Date()).getTime();
-          if (nowEpoch - timestampEpoch > 3e4) {
+          if (nowEpoch - timestampEpoch > 3e3) {
             await releaseMutex(credential_id);
             const mutexInfo2 = await getUserMutex(credential_id);
             if (!mutexInfo2.acquired) {
@@ -6544,7 +6550,6 @@ System.register("pdos", [], function(exports, module) {
                 hashId
               );
               await child.node;
-              await child.refreshTree(this._treePathInclusive);
               this.edges[key] = child;
               this.edgeArray.push(child);
               logger.tree("Finished adding child node", Object.keys(this.edges));
@@ -6584,10 +6589,7 @@ System.register("pdos", [], function(exports, module) {
           await releaseMutex(this.core.stores.userAccount._rawNode.credentials[0].id);
         }
         async update(rawNodeUpdate) {
-          if (!await this.core.stores.userAccount.checkPDOSTreeIsMostRecent()) {
-            console.log("pdos is not most recent");
-            return;
-          }
+          await this.core.stores.userAccount.checkPDOSTreeIsMostRecent();
           if (!this.core.isComputeNode && !await this.getUserMutex()) {
             return;
           }
@@ -6602,6 +6604,7 @@ System.register("pdos", [], function(exports, module) {
           }
         }
         async addChild(ChildClass, instanceName, nodeUpdate, edgeUpdate) {
+          await this.core.stores.userAccount.checkPDOSTreeIsMostRecent();
           logger.tree("tree path inclusive: ", this._treePathInclusive);
           const newChild = new ChildClass(
             this.core,
@@ -6631,11 +6634,6 @@ System.register("pdos", [], function(exports, module) {
           this.edgeArray.push(newChild);
           await newChild.refreshChildren;
           console.log("fething new userhash");
-          try {
-            await this.core.tree.root.updateUserHash();
-          } catch (e) {
-            console.log("error updating user hash", e);
-          }
           return newChild;
         }
       }
@@ -6647,6 +6645,9 @@ System.register("pdos", [], function(exports, module) {
         async updateData() {
           var _a, _b, _c;
           const updateValue = await ((_c = (_b = (_a = this.core) == null ? void 0 : _a.modules) == null ? void 0 : _b.dataRequest) == null ? void 0 : _c.getTodaysValue(this._rawNode.metric));
+          if (!updateValue) {
+            return;
+          }
           if (updateValue !== void 0) {
             const records = this._rawNode.records;
             records[(/* @__PURE__ */ new Date()).getTime()] = updateValue;
@@ -6688,15 +6689,14 @@ System.register("pdos", [], function(exports, module) {
         constructor(core, treePath, _, hash) {
           super(core, treePath, "N_Inbox", hash);
         }
-        async addMessage(sender) {
-          console.log("adding message!");
+        async addMessage(sender, message) {
           const newMessages = [...this._rawNode.unread_messages];
           newMessages.push({
-            message: sender,
-            sender: "system"
+            message,
+            sentOn: (/* @__PURE__ */ new Date()).toISOString(),
+            sender
           });
           try {
-            console.log("runnign update");
             await this.update({
               ...this._rawNode,
               "unread_messages": newMessages
@@ -6706,10 +6706,14 @@ System.register("pdos", [], function(exports, module) {
           }
         }
         async clearMessages() {
-          await this.update({
-            ...this._rawNode,
-            "unread_messages": []
-          });
+          try {
+            await this.update({
+              ...this._rawNode,
+              "unread_messages": []
+            });
+          } catch (e) {
+            console.log("error: ", JSON.stringify(e));
+          }
         }
       }
       __publicField(Inbox, "_nodeType", "N_Inbox");
@@ -6774,15 +6778,18 @@ System.register("pdos", [], function(exports, module) {
           });
         }
         async addInstance(messages = []) {
+          var _a, _b;
           const treatmentInstanceName = (/* @__PURE__ */ new Date()).toISOString();
+          console.log("adding child with root hash: ", (_a = this.core.root) == null ? void 0 : _a._hash);
           await this.addChild(
             TreatmentInstance,
             treatmentInstanceName,
             {
-              "messages": messages,
+              "messages": messages.map((message) => ({ message, sender: this._nodeType, sentOn: (/* @__PURE__ */ new Date()).toISOString() })),
               "date": treatmentInstanceName
             }
           );
+          console.log("added child with root hash: ", (_b = this.core.root) == null ? void 0 : _b._hash);
         }
       }
       __publicField(Treatment, "_nodeType", "N_Treatment_I");
@@ -6834,8 +6841,6 @@ System.register("pdos", [], function(exports, module) {
         }
         async checkPDOSTreeIsMostRecent() {
           const hashId = await getUserHashId(this._rawNode.credentials[0].id);
-          console.log("hashId: ", hashId);
-          console.log("this._hash: ", this._hash);
           if (hashId === this._hash) {
             return true;
           }
@@ -6894,7 +6899,7 @@ System.register("pdos", [], function(exports, module) {
             await updateFunctions[i]();
           }
           this.isRefreshing = false;
-          this._hash = await getUserHashId(this._rawNode.credentials[0].id);
+          this._hash = updateTreePath[0];
         }
       }
       class ConfigValidationError extends Error {
@@ -7077,6 +7082,82 @@ System.register("pdos", [], function(exports, module) {
       __publicField(_Core, "rootInstance", UserAccount);
       let Core = _Core;
       exports("Core", Core);
+      const sync = async () => {
+        if (pdos().root === void 0) {
+          return;
+        }
+        const treatmentBinaries = [];
+        const metricsFound = {};
+        traverseTree(pdos().root, (node) => {
+          if (node._nodeType.toLowerCase().includes("treatmentbinary")) {
+            if (!metricsFound[node._rawNode.metric]) {
+              treatmentBinaries.push(node);
+              metricsFound[node._rawNode.metric] = true;
+            }
+          }
+        });
+        for (let i = 0; i < treatmentBinaries.length; i++) {
+          const treatmentBinary = treatmentBinaries[i];
+          await treatmentBinary.syncData();
+          break;
+        }
+      };
+      const getAllRecords = () => {
+        const dataManifest = pdos().stores.userAccount.edges.e_out_DataManifest;
+        const metrics = {};
+        if (!dataManifest) {
+          return {};
+        }
+        Object.values(dataManifest.edges).forEach((node) => {
+          metrics[node._rawNode.metric] = node._rawNode.records;
+        });
+        return metrics;
+      };
+      const clearMessages = async () => {
+        await pdos().stores.userAccount.edges.e_out_Inbox.clearMessages();
+      };
+      const getMessages = async () => {
+        return pdos().stores.userAccount.edges.e_out_Inbox._rawNode.unread_messages;
+      };
+      const addTreatment = async (name, hashId) => {
+        pdos().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId);
+      };
+      const getActiveTreatments = () => {
+        const activeTreatments = pdos().stores.userAccount.edges.e_out_TreatmentManifest.treatments ?? [];
+        return activeTreatments;
+      };
+      const getTreatment = (treatment) => {
+        return getActiveTreatments().find((t) => {
+          return t._rawNode.treatment === treatment;
+        });
+      };
+      const getTreatmentInstances = (treatment) => {
+        const activeTreatment = getTreatment(treatment);
+        if (!activeTreatment) {
+          return [];
+        }
+        const instances = Object.entries(activeTreatment.edges).filter(([key, value]) => {
+          return key.startsWith("e_out_TreatmentInstance");
+        });
+        return instances.map(([key, value]) => {
+          return value;
+        });
+      };
+      const actions = exports("actions", {
+        inbox: {
+          getMessages,
+          clearMessages
+        },
+        treatments: {
+          getActiveTreatments,
+          getTreatmentInstances,
+          addTreatment
+        },
+        data: {
+          sync,
+          getAllRecords
+        }
+      });
     }
   };
 });

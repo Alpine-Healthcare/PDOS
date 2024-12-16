@@ -37,14 +37,16 @@ export default class Treatment extends PDFSNode {
 
     const treatmentInstanceName = new Date().toISOString()
 
+    console.log("adding child with root hash: ", this.core.root?._hash)
     await this.addChild(
       TreatmentInstance,
       treatmentInstanceName,
       {
-        "messages": messages,
+        "messages": messages.map((message => ({ message, sender: this._nodeType, sentOn: new Date().toISOString() }))),
         "date": treatmentInstanceName
       }
     )
+    console.log("added child with root hash: ", this.core.root?._hash)
   }
 
 

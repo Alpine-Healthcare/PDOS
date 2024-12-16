@@ -1,3 +1,19 @@
+export declare const actions: {
+    inbox: {
+        getMessages: () => Promise<any>;
+        clearMessages: () => Promise<void>;
+    };
+    treatments: {
+        getActiveTreatments: () => any;
+        getTreatmentInstances: (treatment: string) => any[];
+        addTreatment: (name: string, hashId: string) => Promise<void>;
+    };
+    data: {
+        sync: () => Promise<void>;
+        getAllRecords: () => any;
+    };
+};
+
 declare class AppManager extends Module {
     private config;
     private dependencyInjection;
@@ -218,7 +234,7 @@ declare interface NotificationConfig {
 export declare class PDFSNode {
     protected core: Core;
     _nodeType: string;
-    protected _hash: string;
+    _hash: string;
     _treePath: string[];
     _treePathInclusive: string[];
     protected _childrenRefreshMap: {
@@ -265,7 +281,5 @@ declare enum PlatformState {
 declare interface TestConfiguration {
     initCredentialId?: string;
 }
-
-export declare const traverseTree: (root: PDFSNode, callback: (node: PDFSNode) => void) => void;
 
 export { }
