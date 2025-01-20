@@ -6291,10 +6291,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
       }
     }
     async checkAccess(metrics) {
-      if (metrics.length === 0) {
-        return;
+      try {
+        if (metrics.length === 0) {
+          return;
+        }
+        await this.HealthKit.requestAuthorization(metrics.map((metric) => this.MetricMap[metric]));
+      } catch (e) {
+        console.error("Error in getting access to metrics");
       }
-      await this.HealthKit.requestAuthorization(metrics.map((metric) => this.MetricMap[metric]));
     }
     async getTodaysValue(metric) {
       const today = /* @__PURE__ */ new Date();
@@ -6807,13 +6811,14 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
         return false;
       }).map(([edgeType, edge]) => edge);
     }
-    async addTreatment(treatmentName = "", treatmentBinaryHash = "") {
+    async addTreatment(treatmentName = "", treatmentBinaryHash = "", intakeObject = {}) {
       await this.addChild(
         Treatment,
         treatmentName,
         {
           "is_active": true,
-          "active_on": (/* @__PURE__ */ new Date()).toISOString()
+          "active_on": (/* @__PURE__ */ new Date()).toISOString(),
+          "intake": intakeObject
         },
         {
           "e_out_TreatmentBinary": treatmentBinaryHash
@@ -7115,11 +7120,12 @@ var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "sy
   const getMessages = async () => {
     return pdos2().stores.userAccount.edges.e_out_Inbox._rawNode.unread_messages;
   };
-  const addTreatment = async (name, hashId) => {
-    pdos2().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId);
+  const addTreatment = async (name, hashId, intake) => {
+    pdos2().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake);
   };
   const getActiveTreatments = () => {
-    const activeTreatments = pdos2().stores.userAccount.edges.e_out_TreatmentManifest.treatments ?? [];
+    var _a, _b, _c;
+    const activeTreatments = ((_c = (_b = (_a = pdos2().stores.userAccount) == null ? void 0 : _a.edges) == null ? void 0 : _b.e_out_TreatmentManifest) == null ? void 0 : _c.treatments) ?? [];
     return activeTreatments;
   };
   const getTreatment = (treatment) => {

@@ -6,7 +6,7 @@ export declare const actions: {
     treatments: {
         getActiveTreatments: () => any;
         getTreatmentInstances: (treatment: string) => any[];
-        addTreatment: (name: string, hashId: string) => Promise<void>;
+        addTreatment: (name: string, hashId: string, intake: object) => Promise<void>;
     };
     data: {
         sync: () => Promise<void>;

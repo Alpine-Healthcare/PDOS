@@ -28,7 +28,8 @@ export default class TreatmentManifest extends PDFSNode {
 
   public async addTreatment(
     treatmentName: string = '',
-    treatmentBinaryHash: string = ''
+    treatmentBinaryHash: string = '',
+    intakeObject: object = {}
   ) {
     await this.addChild(
       Treatment,
@@ -36,6 +37,7 @@ export default class TreatmentManifest extends PDFSNode {
       {
         "is_active": true,
         "active_on": new Date().toISOString(),
+        "intake": intakeObject
       },
       {
         "e_out_TreatmentBinary": treatmentBinaryHash 
