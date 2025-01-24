@@ -29,7 +29,9 @@ configure({
 
 let mainCore: Core;
 
-let pdos = () => mainCore 
+let pdos = () => {
+  return mainCore 
+}
 export default pdos;
 
 interface TestConfiguration {

@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 export declare const actions: {
     inbox: {
         getMessages: () => Promise<any>;
@@ -25,10 +27,34 @@ declare class AppManager extends Module {
 
 declare class Auth extends Module {
     private config;
-    credentialId: string | null;
+    private authType;
+    info: AuthInfo;
+    credentialId: string | undefined;
+    publicKey: string | undefined;
+    private ethersProvider;
+    private eip1193Provider;
     constructor(core: Core, config: Config_2);
-    initializeUser(credentialId: string): Promise<void>;
+    initializePasskeyUser(credentialId: string): Promise<void>;
+    initializeWalletUser(): Promise<void>;
+    disconnectWalletUser(): Promise<void>;
+    /** Passkey Support */
     setCredentialId(credentialId: string): Promise<void>;
+    /** Wallet Support */
+    initInfoForWalletUser(): Promise<void>;
+    getAccessPackage(): Promise<{
+        key1: string;
+        key2: string;
+        key3: string;
+        key4: string;
+    }>;
+    checkIsActive(): Promise<any>;
+    onboard(): Promise<void>;
+    getPDOSRoot(): Promise<any>;
+    updatePDOSRoot(newHash: string): Promise<void>;
+    setProviders(eip1193Provider: any): Promise<void>;
+    setEip1193Provider(provider: any): Promise<void>;
+    setEthersProvider(provider: ethers.BrowserProvider): Promise<void>;
+    setPublicKey(publicKey: string): Promise<void>;
 }
 
 declare class Authentication extends Constant<AuthenticationState> {
@@ -43,6 +69,12 @@ declare enum AuthenticationState {
     EMAIL_CONFIRMATION_FAILED = 2,
     ERROR = 3,
     UNKNOWN = 4
+}
+
+declare interface AuthInfo {
+    isAuthenticated: boolean;
+    isActive: boolean;
+    pdosRoot: string | undefined;
 }
 
 declare type Callback = () => void;
