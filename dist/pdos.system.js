@@ -23724,6 +23724,7 @@ System.register("pdos", [], function(exports, module) {
           await this.node;
           await this.refreshTree(previousTreePath);
           this._rawNodeUpdate = {};
+          await this.core.tree.root.syncLocalRootHash();
         }
         async addChild(ChildClass, instanceName, nodeUpdate, edgeUpdate) {
           logger.tree("tree path inclusive: ", this._treePathInclusive);
@@ -23890,12 +23891,12 @@ System.register("pdos", [], function(exports, module) {
           addNodeToNetworkMapper("TreatmentInstance", TreatmentInstance);
         }
         async disable() {
-          this.update({
+          await this.update({
             "is_active": false
           });
         }
         async enable() {
-          this.update({
+          await this.update({
             "is_active": true
           });
         }

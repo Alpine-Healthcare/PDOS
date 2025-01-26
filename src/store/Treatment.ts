@@ -20,13 +20,13 @@ export default class Treatment extends PDFSNode {
   }
 
   public async disable(){
-    this.update({
+    await this.update({
       "is_active": false
     })
   }
 
   public async enable(){
-    this.update({
+    await this.update({
       "is_active": true
     })
   }

@@ -193,6 +193,8 @@ export default class PDFSNode {
     await this.node
     await this.refreshTree(previousTreePath)
     this._rawNodeUpdate = {}
+
+    await this.core.tree.root.syncLocalRootHash()
   }
 
   protected async addChild(
