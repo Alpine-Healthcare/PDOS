@@ -1,4 +1,4 @@
-import { makeObservable, observable } from "mobx";
+import { makeObservable, observable, reaction } from "mobx";
 import { Core } from "../Core";
 import { logger } from "../utils/logger";
 import DataManifest from "./DataManifest";
@@ -7,6 +7,8 @@ import { addNodeToNetworkMapper } from "./NetworkMapper";
 import PDFSNode from "./PDFSNode";
 import TreatmentManifest from "./TreatmentManifest";
 import { getUserHashId } from "../utils/mutex";
+import { AuthType } from "../modules/auth/Auth";
+import { hash } from "crypto";
 
 
 export default class UserAccount extends PDFSNode {
@@ -28,31 +30,39 @@ export default class UserAccount extends PDFSNode {
   }
 
   public async checkPDOSTreeIsMostRecent(){
-    const hashId = await getUserHashId(this._rawNode.credentials[0].id)
+    let hashId;
+
+    if (this.core.modules.auth?.authType === AuthType.WALLET) {
+      hashId = await this.core.modules.auth?.getPDOSRoot() 
+    } else {
+      hashId = await getUserHashId(this._rawNode.credentials[0].id)
+    }
+
     if (hashId === this._hash) {
       return true
     }
     this.edges = {}
-    await this.initUser(hashId)
+    await this.init(hashId)
     return false
   }
   
-  public async updateUserHash(){
-    this._hash = await getUserHashId(this._rawNode.credentials[0].id)
+  public async syncLocalRootHash(){
+    if (this.core.modules.auth?.authType === AuthType.WALLET) {
+      const hashId = await this.core.modules.auth?.getPDOSRoot() 
+
+      if (this._hash !== hashId) {
+        await this.core.modules.auth.updatePDOSRoot(this._hash)
+      }
+    } 
   }
 
-  public async refreshPDOSTree(){
-    const hashId = await getUserHashId(this._rawNode.credentials[0].id)
-    this.edges = {}
-    await this.initUser(hashId)
-  }
-
-  public async initUser(hash: string) {
+  public async init(hash: string) {
     this.isLoaded = false
     this._hash = hash
     await this.node
     await this.refreshChildren
     this.isLoaded = true
+    return this._hash
   }
 
   public async refresh(oldTreePath: string[], updateTreePath: string[]) {
@@ -72,10 +82,10 @@ export default class UserAccount extends PDFSNode {
 
       updateFunctions.push(
         async () => {
-          const newTreepPath = updatedTreePath.slice(0, currentDepth)
+          const newTreePath = updatedTreePath.slice(0, currentDepth)
           currentNode._hash = updatedTreePath[currentDepth]
-          currentNode._treePath = newTreepPath 
-          currentNode._treePathInclusive = [...newTreepPath, currentNode._hash] 
+          currentNode._treePath = newTreePath 
+          currentNode._treePathInclusive = [...newTreePath, currentNode._hash] 
 
           await currentNode.node
         }
@@ -113,6 +123,8 @@ export default class UserAccount extends PDFSNode {
 
     this.isRefreshing = false
     this._hash = updateTreePath[0]
+    this.core.tree.root = this
+    console.log("finished refreshing tree", JSON.stringify(this.core.tree.root._hash))
   }
 
 }

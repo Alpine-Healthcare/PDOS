@@ -23282,6 +23282,11 @@ class BrowserProvider extends JsonRpcApiPollingProvider {
   }
 }
 _request2 = new WeakMap();
+var AuthType = /* @__PURE__ */ ((AuthType2) => {
+  AuthType2[AuthType2["WALLET"] = 0] = "WALLET";
+  AuthType2[AuthType2["PASSKEY"] = 1] = "PASSKEY";
+  return AuthType2;
+})(AuthType || {});
 const ALPINE_HEALTHCARE = "0x20a8d2B24927166cCfb2c22848cD519A7E91Cea5";
 const ALPINE_HEALTHCARE_ABI = [{ "inputs": [{ "internalType": "address", "name": "user", "type": "address" }], "name": "checkActive", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "user", "type": "address" }], "name": "getAccessPackage", "outputs": [{ "internalType": "string", "name": "", "type": "string" }, { "internalType": "string", "name": "", "type": "string" }, { "internalType": "string", "name": "", "type": "string" }, { "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "address", "name": "user", "type": "address" }], "name": "getPDOSRoot", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_key1", "type": "string" }, { "internalType": "string", "name": "_key2", "type": "string" }, { "internalType": "string", "name": "_key3", "type": "string" }, { "internalType": "string", "name": "_key4", "type": "string" }], "name": "onboard", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [{ "internalType": "string", "name": "_newHash", "type": "string" }], "name": "updatePDOSRoot", "outputs": [], "stateMutability": "nonpayable", "type": "function" }];
 class Auth extends Module {
@@ -23304,7 +23309,7 @@ class Auth extends Module {
     });
   }
   async initializePasskeyUser(credentialId) {
-    console.log("initing credid: ", credentialId);
+    this.authType = 1;
     await this.setCredentialId(credentialId);
     this.authType = 1;
     this.info.isAuthenticated = true;
@@ -23312,25 +23317,24 @@ class Auth extends Module {
     return;
   }
   async initializeWalletUser() {
-    const addresses = await this.eip1193Provider.request({ method: "eth_requestAccounts" });
+    this.authType = 0;
+    let addresses = [];
+    await this.disconnectWalletUser();
+    addresses = await this.eip1193Provider.request({ method: "eth_requestAccounts" });
     if (addresses.length > 0) {
       this.publicKey = addresses[0];
       await this.initInfoForWalletUser();
-      console.log("pdosRoot", this.info.pdosRoot);
-      this.authType = 0;
     }
     return;
   }
   async disconnectWalletUser() {
-    this.eip1193Provider.disconnect();
+    await this.eip1193Provider.disconnect();
     this.info = {
       isActive: false,
       isAuthenticated: false,
       pdosRoot: void 0
     };
     this.publicKey = void 0;
-    this.ethersProvider = void 0;
-    this.eip1193Provider = void 0;
   }
   /** Passkey Support */
   async setCredentialId(credentialId) {
@@ -23340,21 +23344,47 @@ class Auth extends Module {
       const initCredentialId = (_a2 = this.core.test) == null ? void 0 : _a2.initCredentialId;
       const userRes = await axios.get(this.core.gatewayURL + "/pdos/users/" + initCredentialId);
       const user = userRes.data;
-      await this.core.stores.userAccount.initUser(user[1].hash_id);
+      await this.core.tree.root.init(user[1].hash_id);
     } else {
       const userRes = await axios.get(this.core.gatewayURL + "/pdos/users/" + this.credentialId);
       const user = userRes.data;
-      await this.core.stores.userAccount.initUser(user[1].hash_id);
+      await this.core.tree.root.init(user[1].hash_id);
     }
   }
   /** Wallet Support */
   async initInfoForWalletUser() {
+    this.authType = 0;
     const isActive = await this.checkIsActive();
-    const pdosRoot = await this.getPDOSRoot();
-    await this.getAccessPackage();
-    await this.core.stores.userAccount.initUser(pdosRoot);
     this.info.isActive = isActive;
-    this.info.pdosRoot = pdosRoot;
+    if (!isActive) {
+      try {
+        const newUser = await fetch(this.core.gatewayURL + "/auth/register-wallet-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            publicKey: this.publicKey
+          })
+        });
+        const newUserResponse = await newUser.json();
+        const newPDOSRoot = newUserResponse.hash_id;
+        await this.onboard();
+        this.info.pdosRoot = newPDOSRoot;
+        this.info.isActive = true;
+      } catch (e) {
+        throw new Error("failed registering user");
+      }
+    } else {
+      const pdosRoot = await this.getPDOSRoot();
+      await this.getAccessPackage();
+      this.info.pdosRoot = pdosRoot;
+    }
+    const root = await this.core.tree.root.init(this.info.pdosRoot);
+    if (this.info.pdosRoot !== root) {
+      await this.updatePDOSRoot(root);
+      this.info.pdosRoot = root;
+    }
     this.info.isAuthenticated = true;
   }
   async getAccessPackage() {
@@ -23565,47 +23595,6 @@ const addToPdfs = async (treePath, newNodeData, newNodeType) => {
     oldTreePath: [...treePath, addResJson.new_node.hash_id]
   };
 };
-const getUserHashId = async (credential_id) => {
-  const userRes = await axios.get(pdos().gatewayURL + "/pdos/users/" + credential_id);
-  const user = userRes.data;
-  return user[1].hash_id;
-};
-const getUserMutex = async (credential_id) => {
-  const mutex = await axios.get(pdos().gatewayURL + "/pdos/mutex", {
-    params: {
-      credential_id
-    }
-  });
-  const mutexInfo = mutex.data;
-  return mutexInfo;
-};
-const releaseMutex = async (credential_id) => {
-  try {
-    const releaseResp = await axios.get(pdos().gatewayURL + "/pdos/mutex/release", { params: { credential_id } });
-    return releaseResp.data;
-  } catch (e) {
-    console.log("error releasing mutex: ", e);
-    return false;
-  }
-};
-const acquireMutexForUser = async (credential_id) => {
-  const mutexInfo = await getUserMutex(credential_id);
-  if (!mutexInfo.acquired) {
-    const timestamp = mutexInfo.timestamp;
-    const timestampEpoch = new Date(timestamp).getTime();
-    const nowEpoch = (/* @__PURE__ */ new Date()).getTime();
-    if (nowEpoch - timestampEpoch > 3e3) {
-      await releaseMutex(credential_id);
-      const mutexInfo2 = await getUserMutex(credential_id);
-      if (!mutexInfo2.acquired) {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-  return true;
-};
 class PDFSNode {
   constructor(core, treePath, nodeType, hash2) {
     __publicField(this, "_nodeType", "");
@@ -23719,53 +23708,20 @@ class PDFSNode {
     })();
   }
   async refreshTree(previousTreePath) {
-    await this.core.stores.userAccount.refresh(
+    await this.core.tree.root.refresh(
       previousTreePath,
       this._treePathInclusive
     );
   }
-  async getUserMutex() {
-    const userMutex = await acquireMutexForUser(this.core.stores.userAccount._rawNode.credentials[0].id);
-    if (userMutex) {
-      return true;
-    }
-    const getMutex = async () => {
-      await new Promise((resolve) => {
-        setTimeout(async () => {
-          const mutex = await acquireMutexForUser(this.core.stores.userAccount._rawNode.credentials[0].id);
-          if (mutex) {
-            return resolve();
-          } else {
-            return await getMutex();
-          }
-        }, 1e3);
-      });
-    };
-    await getMutex();
-    await this.core.stores.userAccount.refreshPDOSTree();
-    await this.releaseMutex();
-    return false;
-  }
-  async releaseMutex() {
-    await releaseMutex(this.core.stores.userAccount._rawNode.credentials[0].id);
-  }
   async update(rawNodeUpdate) {
-    await this.core.stores.userAccount.checkPDOSTreeIsMostRecent();
-    if (!this.core.isComputeNode && !await this.getUserMutex()) {
-      return;
-    }
     this._rawNodeUpdate = rawNodeUpdate;
     this._hash = "";
     const previousTreePath = [...this._treePathInclusive.slice(0, -1)];
     await this.node;
     await this.refreshTree(previousTreePath);
     this._rawNodeUpdate = {};
-    if (!this.core.isComputeNode) {
-      await this.releaseMutex();
-    }
   }
   async addChild(ChildClass, instanceName, nodeUpdate, edgeUpdate) {
-    await this.core.stores.userAccount.checkPDOSTreeIsMostRecent();
     logger.tree("tree path inclusive: ", this._treePathInclusive);
     const newChild = new ChildClass(
       this.core,
@@ -23794,7 +23750,6 @@ class PDFSNode {
     this.edges[edgeName] = newChild;
     this.edgeArray.push(newChild);
     await newChild.refreshChildren;
-    console.log("fething new userhash");
     return newChild;
   }
 }
@@ -23892,7 +23847,7 @@ class TreatmentBinary extends PDFSNode {
     (_c = (_b = (_a2 = this.core) == null ? void 0 : _a2.modules) == null ? void 0 : _b.dataRequest) == null ? void 0 : _c.checkAccess(this.dataMetrics);
   }
   async createDataGroup(metric) {
-    const rootNode = this.core.stores.userAccount;
+    const rootNode = this.core.tree.root;
     if (!doesPDFSNodeExist(toCamel(metric), rootNode)) {
       await rootNode.edges.e_out_DataManifest.addDataGroup(
         metric
@@ -23902,12 +23857,14 @@ class TreatmentBinary extends PDFSNode {
   async syncData() {
     for (let i = 0; i < this.dataMetrics.length; i++) {
       const metric = this.dataMetrics[i];
-      const dataGroups = this.core.stores.userAccount.edges.e_out_DataManifest.edges;
+      const dataGroups = this.core.tree.root.edges.e_out_DataManifest.edges;
       const getDataGroup = (metric2) => Object.values(dataGroups).find(
         (node) => node._nodeType.toLowerCase().includes(toCamel(metric2).toLowerCase())
       );
       if (!getDataGroup(metric)) {
+        console.log("Creating data group for metric", metric);
         await this.createDataGroup(metric);
+        console.log("finished creating data group", this.core.tree.root._hash);
       }
       const dataGroup = getDataGroup(metric);
       await dataGroup.updateData();
@@ -23986,6 +23943,11 @@ class TreatmentManifest extends PDFSNode {
   }
 }
 __publicField(TreatmentManifest, "_nodeType", "N_TreatmentManifest");
+const getUserHashId = async (credential_id) => {
+  const userRes = await axios.get(pdos().gatewayURL + "/pdos/users/" + credential_id);
+  const user = userRes.data;
+  return user[1].hash_id;
+};
 class UserAccount extends PDFSNode {
   constructor(core) {
     super(core, [], "N_UserAccount");
@@ -24001,28 +23963,36 @@ class UserAccount extends PDFSNode {
     addNodeToNetworkMapper("Inbox", Inbox);
   }
   async checkPDOSTreeIsMostRecent() {
-    const hashId = await getUserHashId(this._rawNode.credentials[0].id);
+    var _a2, _b;
+    let hashId;
+    if (((_a2 = this.core.modules.auth) == null ? void 0 : _a2.authType) === AuthType.WALLET) {
+      hashId = await ((_b = this.core.modules.auth) == null ? void 0 : _b.getPDOSRoot());
+    } else {
+      hashId = await getUserHashId(this._rawNode.credentials[0].id);
+    }
     if (hashId === this._hash) {
       return true;
     }
     this.edges = {};
-    await this.initUser(hashId);
+    await this.init(hashId);
     return false;
   }
-  async updateUserHash() {
-    this._hash = await getUserHashId(this._rawNode.credentials[0].id);
+  async syncLocalRootHash() {
+    var _a2, _b;
+    if (((_a2 = this.core.modules.auth) == null ? void 0 : _a2.authType) === AuthType.WALLET) {
+      const hashId = await ((_b = this.core.modules.auth) == null ? void 0 : _b.getPDOSRoot());
+      if (this._hash !== hashId) {
+        await this.core.modules.auth.updatePDOSRoot(this._hash);
+      }
+    }
   }
-  async refreshPDOSTree() {
-    const hashId = await getUserHashId(this._rawNode.credentials[0].id);
-    this.edges = {};
-    await this.initUser(hashId);
-  }
-  async initUser(hash2) {
+  async init(hash2) {
     this.isLoaded = false;
     this._hash = hash2;
     await this.node;
     await this.refreshChildren;
     this.isLoaded = true;
+    return this._hash;
   }
   async refresh(oldTreePath, updateTreePath) {
     this.isRefreshing = true;
@@ -24030,10 +24000,10 @@ class UserAccount extends PDFSNode {
     const getTreeUpdateFunctions = (currentNode, currentDepth, oldTreePath2, updatedTreePath) => {
       updateFunctions.push(
         async () => {
-          const newTreepPath = updatedTreePath.slice(0, currentDepth);
+          const newTreePath = updatedTreePath.slice(0, currentDepth);
           currentNode._hash = updatedTreePath[currentDepth];
-          currentNode._treePath = newTreepPath;
-          currentNode._treePathInclusive = [...newTreepPath, currentNode._hash];
+          currentNode._treePath = newTreePath;
+          currentNode._treePathInclusive = [...newTreePath, currentNode._hash];
           await currentNode.node;
         }
       );
@@ -24061,6 +24031,8 @@ class UserAccount extends PDFSNode {
     }
     this.isRefreshing = false;
     this._hash = updateTreePath[0];
+    this.core.tree.root = this;
+    console.log("finished refreshing tree", JSON.stringify(this.core.tree.root._hash));
   }
 }
 class ConfigValidationError extends Error {
@@ -24116,7 +24088,7 @@ const _Core = class _Core {
    * @param config Instantiation object given to pdos
    */
   validateConfig(config) {
-    const acceptedEnvs = ["production", "development", "test"];
+    const acceptedEnvs = ["production", "development", "test", "sepolia"];
     if (config.env && !acceptedEnvs.includes(config.env)) {
       throw new ConfigValidationError("Invalid environment given.");
     }
@@ -24263,6 +24235,7 @@ const sync = async () => {
     await treatmentBinary.syncData();
     break;
   }
+  await pdos().tree.root.syncLocalRootHash();
 };
 const getAllRecords = () => {
   const dataManifest = pdos().stores.userAccount.edges.e_out_DataManifest;
@@ -24282,7 +24255,8 @@ const getMessages = async () => {
   return pdos().stores.userAccount.edges.e_out_Inbox._rawNode.unread_messages;
 };
 const addTreatment = async (name, hashId, intake) => {
-  pdos().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake);
+  await pdos().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake);
+  await pdos().tree.root.syncLocalRootHash();
 };
 const getActiveTreatments = () => {
   var _a2, _b, _c;

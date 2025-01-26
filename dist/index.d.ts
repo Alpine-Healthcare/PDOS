@@ -27,7 +27,7 @@ declare class AppManager extends Module {
 
 declare class Auth extends Module {
     private config;
-    private authType;
+    authType: AuthType | undefined;
     info: AuthInfo;
     credentialId: string | undefined;
     publicKey: string | undefined;
@@ -75,6 +75,11 @@ declare interface AuthInfo {
     isAuthenticated: boolean;
     isActive: boolean;
     pdosRoot: string | undefined;
+}
+
+declare enum AuthType {
+    WALLET = 0,
+    PASSKEY = 1
 }
 
 declare type Callback = () => void;
@@ -170,7 +175,7 @@ export declare class Core {
 }
 
 declare interface CoreConfig {
-    env: 'production' | 'development' | 'test';
+    env: 'production' | 'development' | 'test' | 'sepolia';
     context: Context;
     test?: TestConfiguration;
     modules?: any;
@@ -289,8 +294,6 @@ export declare class PDFSNode {
     setRawNodeUpdate(rawNode: any): void;
     get refreshChildren(): Promise<void> | undefined;
     refreshTree(previousTreePath: string[]): Promise<void>;
-    protected getUserMutex(): Promise<boolean>;
-    protected releaseMutex(): Promise<void>;
     protected update(rawNodeUpdate: any): Promise<void>;
     protected addChild(ChildClass: any, instanceName: string, nodeUpdate: any, edgeUpdate?: any): Promise<any>;
 }

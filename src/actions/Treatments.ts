@@ -2,7 +2,8 @@ import pdos from "../Core"
 
 
 export const addTreatment = async (name: string, hashId: string, intake: object) => {
-  pdos().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake)
+  await pdos().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake)
+  await pdos().tree.root.syncLocalRootHash()
 }
 
 export const getActiveTreatments = () => {

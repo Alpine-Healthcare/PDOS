@@ -30,7 +30,7 @@ export default class TreatmentBinary extends PDFSNode {
   };
 
   private async createDataGroup(metric: string) {
-    const rootNode = this.core.stores.userAccount
+    const rootNode = this.core.tree.root
     if (!doesPDFSNodeExist(toCamel(metric), rootNode)) {
       await rootNode.edges.e_out_DataManifest.addDataGroup(
         metric
@@ -41,14 +41,16 @@ export default class TreatmentBinary extends PDFSNode {
   public async syncData(){
     for(let i = 0; i < this.dataMetrics.length; i++) {
       const metric = this.dataMetrics[i]
-      const dataGroups = this.core.stores.userAccount.edges.e_out_DataManifest.edges
+      const dataGroups = this.core.tree.root.edges.e_out_DataManifest.edges
       const getDataGroup = (metric: string) => Object.values(dataGroups).find(
         (node: any) =>
           node._nodeType.toLowerCase().includes(toCamel(metric).toLowerCase())
       ) as DataGroup
 
       if (!getDataGroup(metric)) {
+        console.log('Creating data group for metric', metric)
         await this.createDataGroup(metric)
+        console.log("finished creating data group", this.core.tree.root._hash)
       }
 
       const dataGroup = getDataGroup(metric)

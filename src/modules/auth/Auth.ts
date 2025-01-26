@@ -5,7 +5,7 @@ import axios from "axios";
 import { ethers } from "ethers";
 import { makeObservable, observable } from "mobx";
 
-enum AuthType {
+export enum AuthType {
   WALLET,
   PASSKEY
 }
@@ -23,7 +23,7 @@ const ALPINE_HEALTHCARE_ABI = [{"inputs":[{"internalType":"address","name":"user
 
 export default class Auth extends Module {
 
-  private authType : AuthType | undefined;
+  public authType : AuthType | undefined;
   public info: AuthInfo = {
     isAuthenticated: false,
     isActive: false,
@@ -46,7 +46,7 @@ export default class Auth extends Module {
   public async initializePasskeyUser(
     credentialId: string,
   ) {
-    console.log("initing credid: ", credentialId)
+    this.authType = AuthType.PASSKEY
     await this.setCredentialId(credentialId)
     this.authType = AuthType.PASSKEY
     this.info.isAuthenticated = true
@@ -55,26 +55,25 @@ export default class Auth extends Module {
   }
 
   public async initializeWalletUser() {
-    const addresses = await this.eip1193Provider.request({ method: 'eth_requestAccounts' });
+    this.authType = AuthType.WALLET
+    let addresses: string[] = []
+    await this.disconnectWalletUser()
+    addresses = await this.eip1193Provider.request({ method: 'eth_requestAccounts' });
     if (addresses.length > 0) {
       this.publicKey = addresses[0]
       await this.initInfoForWalletUser()
-      console.log("pdosRoot", this.info.pdosRoot)
-      this.authType = AuthType.WALLET
     }
     return
   }
 
   public async disconnectWalletUser() {
-    this.eip1193Provider.disconnect()
+    await this.eip1193Provider.disconnect()
     this.info = {
       isActive: false,
       isAuthenticated: false,
       pdosRoot: undefined
     }
     this.publicKey = undefined
-    this.ethersProvider = undefined
-    this.eip1193Provider = undefined
   }
 
   /** Passkey Support */
@@ -85,25 +84,54 @@ export default class Auth extends Module {
       const initCredentialId = this.core.test?.initCredentialId
       const userRes = await axios.get(this.core.gatewayURL +"/pdos/users/" + initCredentialId)
       const user = userRes.data
-      await this.core.stores.userAccount.initUser(user[1].hash_id)
+      await this.core.tree.root.init(user[1].hash_id)
     } else {
       const userRes = await axios.get(this.core.gatewayURL +"/pdos/users/" + this.credentialId)
       const user = userRes.data
-      await this.core.stores.userAccount.initUser(user[1].hash_id)
+      await this.core.tree.root.init(user[1].hash_id)
     }
   }
 
   /** Wallet Support */
 
   public async initInfoForWalletUser() {
+    this.authType = AuthType.WALLET
     const isActive = await this.checkIsActive()
-    const pdosRoot = await this.getPDOSRoot()
-    const accessPackage = await this.getAccessPackage()
-    
-    await this.core.stores.userAccount.initUser(pdosRoot)
-
     this.info.isActive = isActive
-    this.info.pdosRoot = pdosRoot
+
+    if (!isActive) {
+      try {
+        const newUser = await fetch(this.core.gatewayURL+ "/auth/register-wallet-user", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            publicKey: this.publicKey,
+          })
+        })
+        const newUserResponse = await newUser.json()
+        const newPDOSRoot = (newUserResponse as any).hash_id
+        await this.onboard()
+        this.info.pdosRoot = newPDOSRoot
+        this.info.isActive = true
+      } catch (e) {
+        throw new Error("failed registering user")
+      }
+    } else {
+      const pdosRoot = await this.getPDOSRoot()
+      const accessPackage = await this.getAccessPackage()
+      this.info.pdosRoot = pdosRoot
+    }
+    
+    const root = await this.core.tree.root.init(this.info.pdosRoot)
+
+    if (this.info.pdosRoot !== root) {
+      await this.updatePDOSRoot(root)
+      this.info.pdosRoot = root
+    }
+
+
     this.info.isAuthenticated = true
   }
 
@@ -169,7 +197,8 @@ export default class Auth extends Module {
     const receipt = await tx.wait();
     console.log("receipt", receipt)
     console.log("hash", receipt.hash)
-    this.info.pdosRoot = newHash 
+
+    this.info.pdosRoot = newHash
   }
 
   public async setProviders(eip1193Provider: any){

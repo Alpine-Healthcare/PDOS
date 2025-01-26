@@ -26,6 +26,8 @@ export const sync = async () => {
     break
   }
 
+  await pdos().tree.root.syncLocalRootHash()
+
 }
 
 export const getAllRecords = () => {
