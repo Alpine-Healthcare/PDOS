@@ -97,9 +97,11 @@ export default class Auth extends Module {
   public async initInfoForWalletUser() {
     this.authType = AuthType.WALLET
     const isActive = await this.checkIsActive()
+    const pdosRoot = await this.getPDOSRoot()
+    console.log("pdosroot: ", pdosRoot)
     this.info.isActive = isActive
 
-    if (!isActive) {
+    if (!isActive || !pdosRoot) {
       try {
         const newUser = await fetch(this.core.gatewayURL+ "/auth/register-wallet-user", {
           method: 'POST',
@@ -123,8 +125,10 @@ export default class Auth extends Module {
       const accessPackage = await this.getAccessPackage()
       this.info.pdosRoot = pdosRoot
     }
-    
+   
+    console.log("root: ", this.info.pdosRoot)
     const root = await this.core.tree.root.init(this.info.pdosRoot)
+    console.log("new root: ", root)
 
     if (this.info.pdosRoot !== root) {
       await this.updatePDOSRoot(root)

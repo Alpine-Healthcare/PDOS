@@ -3,6 +3,7 @@ import pdos from "../Core"
 
 export const addTreatment = async (name: string, hashId: string, intake: object) => {
   await pdos().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake)
+  console.log("callign sync")
   await pdos().tree.root.syncLocalRootHash()
 }
 

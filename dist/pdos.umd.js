@@ -23359,8 +23359,10 @@ var __privateWrapper = (obj, member, setter, getter) => ({
     async initInfoForWalletUser() {
       this.authType = 0;
       const isActive = await this.checkIsActive();
+      const pdosRoot = await this.getPDOSRoot();
+      console.log("pdosroot: ", pdosRoot);
       this.info.isActive = isActive;
-      if (!isActive) {
+      if (!isActive || !pdosRoot) {
         try {
           const newUser = await fetch(this.core.gatewayURL + "/auth/register-wallet-user", {
             method: "POST",
@@ -23380,11 +23382,13 @@ var __privateWrapper = (obj, member, setter, getter) => ({
           throw new Error("failed registering user");
         }
       } else {
-        const pdosRoot = await this.getPDOSRoot();
+        const pdosRoot2 = await this.getPDOSRoot();
         await this.getAccessPackage();
-        this.info.pdosRoot = pdosRoot;
+        this.info.pdosRoot = pdosRoot2;
       }
+      console.log("root: ", this.info.pdosRoot);
       const root = await this.core.tree.root.init(this.info.pdosRoot);
+      console.log("new root: ", root);
       if (this.info.pdosRoot !== root) {
         await this.updatePDOSRoot(root);
         this.info.pdosRoot = root;
@@ -23984,8 +23988,12 @@ var __privateWrapper = (obj, member, setter, getter) => ({
     }
     async syncLocalRootHash() {
       var _a2, _b;
+      console.log("hi");
       if (((_a2 = this.core.modules.auth) == null ? void 0 : _a2.authType) === AuthType.WALLET) {
         const hashId = await ((_b = this.core.modules.auth) == null ? void 0 : _b.getPDOSRoot());
+        console.log("syncing root hash");
+        console.log("old hash: ", hashId);
+        console.log("new hash: ", this._hash);
         if (this._hash !== hashId) {
           await this.core.modules.auth.updatePDOSRoot(this._hash);
         }
@@ -24261,6 +24269,7 @@ var __privateWrapper = (obj, member, setter, getter) => ({
   };
   const addTreatment = async (name, hashId, intake) => {
     await pdos().stores.userAccount.edges.e_out_TreatmentManifest.addTreatment(name, hashId, intake);
+    console.log("callign sync");
     await pdos().tree.root.syncLocalRootHash();
   };
   const getActiveTreatments = () => {
