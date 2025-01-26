@@ -16,7 +16,9 @@ interface AuthInfo {
   pdosRoot: string | undefined
 }
 
-interface Config {}
+interface Config {
+  eip1193Provider: any
+}
 
 const ALPINE_HEALTHCARE = "0x20a8d2B24927166cCfb2c22848cD519A7E91Cea5" 
 const ALPINE_HEALTHCARE_ABI = [{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"checkActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getAccessPackage","outputs":[{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getPDOSRoot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_key1","type":"string"},{"internalType":"string","name":"_key2","type":"string"},{"internalType":"string","name":"_key3","type":"string"},{"internalType":"string","name":"_key4","type":"string"}],"name":"onboard","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_newHash","type":"string"}],"name":"updatePDOSRoot","outputs":[],"stateMutability":"nonpayable","type":"function"}] 
@@ -41,6 +43,7 @@ export default class Auth extends Module {
       info: observable,
       publicKey: observable,
     });
+    this.setProviders(config.eip1193Provider)
   }
 
   public async initializePasskeyUser(
@@ -96,12 +99,10 @@ export default class Auth extends Module {
 
   public async initInfoForWalletUser() {
     this.authType = AuthType.WALLET
-    const isActive = await this.checkIsActive()
-    const pdosRoot = await this.getPDOSRoot()
-    console.log("pdosroot: ", pdosRoot)
-    this.info.isActive = isActive
+    this.info.isActive = await this.checkIsActive()
 
-    if (!isActive || !pdosRoot) {
+    const pdosRoot = await this.getPDOSRoot()
+    if (!pdosRoot) {
       try {
         const newUser = await fetch(this.core.gatewayURL+ "/auth/register-wallet-user", {
           method: 'POST',
@@ -116,25 +117,20 @@ export default class Auth extends Module {
         const newPDOSRoot = (newUserResponse as any).hash_id
         await this.onboard()
         this.info.pdosRoot = newPDOSRoot
-        this.info.isActive = true
       } catch (e) {
-        throw new Error("failed registering user")
+        throw new Error("Failed onboarding user")
       }
     } else {
       const pdosRoot = await this.getPDOSRoot()
-      const accessPackage = await this.getAccessPackage()
       this.info.pdosRoot = pdosRoot
     }
    
-    console.log("root: ", this.info.pdosRoot)
     const root = await this.core.tree.root.init(this.info.pdosRoot)
-    console.log("new root: ", root)
 
     if (this.info.pdosRoot !== root) {
       await this.updatePDOSRoot(root)
       this.info.pdosRoot = root
     }
-
 
     this.info.isAuthenticated = true
   }
@@ -180,6 +176,7 @@ export default class Auth extends Module {
 
   public async getPDOSRoot() {
     if (!this.ethersProvider) {
+      console.log("no ethers provider")
       return
     }
 

@@ -167,7 +167,7 @@ export default class PDFSNode {
         await child.node
 
         //TODO: unsure if this is needed
-        // await child.refreshTree(this._treePathInclusive)
+        await child.refreshTree(this._treePathInclusive)
 
         this.edges[key] = child
         this.edgeArray.push(child)

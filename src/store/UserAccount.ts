@@ -47,14 +47,8 @@ export default class UserAccount extends PDFSNode {
   }
   
   public async syncLocalRootHash(){
-    console.log("hi")
     if (this.core.modules.auth?.authType === AuthType.WALLET) {
       const hashId = await this.core.modules.auth?.getPDOSRoot() 
-
-      console.log("syncing root hash")
-      console.log("old hash: ", hashId)
-      console.log("new hash: ", this._hash)
-
       if (this._hash !== hashId) {
         await this.core.modules.auth.updatePDOSRoot(this._hash)
       }
@@ -129,7 +123,6 @@ export default class UserAccount extends PDFSNode {
     this.isRefreshing = false
     this._hash = updateTreePath[0]
     this.core.tree.root = this
-    console.log("finished refreshing tree", JSON.stringify(this.core.tree.root._hash))
   }
 
 }

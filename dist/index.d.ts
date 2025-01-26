@@ -89,6 +89,7 @@ declare interface Config {
 }
 
 declare interface Config_2 {
+    eip1193Provider: any;
 }
 
 declare interface Config_3 {

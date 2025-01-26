@@ -23307,6 +23307,7 @@ class Auth extends Module {
       info: observable,
       publicKey: observable
     });
+    this.setProviders(config.eip1193Provider);
   }
   async initializePasskeyUser(credentialId) {
     this.authType = 1;
@@ -23358,7 +23359,7 @@ class Auth extends Module {
     const pdosRoot = await this.getPDOSRoot();
     console.log("pdosroot: ", pdosRoot);
     this.info.isActive = isActive;
-    if (!isActive || !pdosRoot) {
+    if (!pdosRoot) {
       try {
         const newUser = await fetch(this.core.gatewayURL + "/auth/register-wallet-user", {
           method: "POST",
@@ -23371,6 +23372,7 @@ class Auth extends Module {
         });
         const newUserResponse = await newUser.json();
         const newPDOSRoot = newUserResponse.hash_id;
+        console.log("onboarding with pdos root: ", newPDOSRoot);
         await this.onboard();
         this.info.pdosRoot = newPDOSRoot;
         this.info.isActive = true;
@@ -23379,13 +23381,12 @@ class Auth extends Module {
       }
     } else {
       const pdosRoot2 = await this.getPDOSRoot();
-      await this.getAccessPackage();
       this.info.pdosRoot = pdosRoot2;
     }
-    console.log("root: ", this.info.pdosRoot);
     const root = await this.core.tree.root.init(this.info.pdosRoot);
-    console.log("new root: ", root);
+    console.log("root after initalizing tree: ", root);
     if (this.info.pdosRoot !== root) {
+      console.log("updating pdos root with: ", root);
       await this.updatePDOSRoot(root);
       this.info.pdosRoot = root;
     }
@@ -23426,6 +23427,7 @@ class Auth extends Module {
   }
   async getPDOSRoot() {
     if (!this.ethersProvider) {
+      console.log("no ethers provider");
       return;
     }
     const signer = await this.ethersProvider.getSigner();
@@ -23704,6 +23706,7 @@ class PDFSNode {
           hashId
         );
         await child.node;
+        await child.refreshTree(this._treePathInclusive);
         this.edges[key] = child;
         this.edgeArray.push(child);
         logger.tree("Finished adding child node", Object.keys(this.edges));
