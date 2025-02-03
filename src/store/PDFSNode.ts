@@ -1,6 +1,6 @@
 
 import { makeObservable, observable, reaction, toJS } from "mobx";
-import { Core } from "../Core";
+import pdos, { Core } from "../Core";
 import { getEdgeInfo } from "./Model";
 import { NetworkMapper } from "./NetworkMapper";
 import { addToPdfs, getFromPdfs } from "./Pdfs";
@@ -65,6 +65,9 @@ export default class PDFSNode {
     return (async () => {
       if (this._hash) {
         this._rawNode = await getFromPdfs(this._hash)
+        if (this._rawNode.data) {
+          this._rawNode.data = await this.core.modules.auth?.decrypt(this._rawNode.data) 
+        }
         this._nodeType = this._rawNode.type
         this._treePathInclusive = [...this._treePath, this._hash] 
 
@@ -226,8 +229,16 @@ export default class PDFSNode {
       })
     }
 
-    newChild.setRawNodeUpdate({
+    const encrypted = await pdos().modules.auth?.encrypt(nodeUpdate)
+
+    const nodeUpdateEncrypted = {
       ...nodeUpdate,
+      data: encrypted
+    }
+
+
+    newChild.setRawNodeUpdate({
+      ...nodeUpdateEncrypted,
       edges
     })
     await newChild.node

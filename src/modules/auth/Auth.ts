@@ -2,8 +2,13 @@
 import Module from "../Module";
 import { Core } from "../..";
 import axios from "axios";
-import { ethers } from "ethers";
+import { ethers, Wallet } from "ethers";
 import { makeObservable, observable } from "mobx";
+
+import * as aes from "ethereum-cryptography/aes.js";
+import { bytesToUtf8, hexToBytes, utf8ToBytes } from "ethereum-cryptography/utils.js";
+import { getRandomBytes } from 'ethereum-cryptography/random';
+import { base64ToUint8Array, importAddressAsHmacKey, importIvAsKey, publicKeyToHex, uint8ArrayToBase64, wrapIv } from "../../utils/crypto";
 
 export enum AuthType {
   WALLET,
@@ -14,28 +19,41 @@ interface AuthInfo {
   isAuthenticated: boolean
   isActive: boolean
   pdosRoot: string | undefined
+  computeNodeAddress: string | undefined
+}
+
+interface EncryptionScheme {
+  iv: string,
+  dataKey: string,
 }
 
 interface Config {
-  eip1193Provider: any
+  eip1193Provider: any,
+  jsonRpcProvider: ethers.JsonRpcProvider 
+  privateKey: string
 }
 
-const ALPINE_HEALTHCARE = "0x20a8d2B24927166cCfb2c22848cD519A7E91Cea5" 
-const ALPINE_HEALTHCARE_ABI = [{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"checkActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getAccessPackage","outputs":[{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"},{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getPDOSRoot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_key1","type":"string"},{"internalType":"string","name":"_key2","type":"string"},{"internalType":"string","name":"_key3","type":"string"},{"internalType":"string","name":"_key4","type":"string"}],"name":"onboard","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_newHash","type":"string"}],"name":"updatePDOSRoot","outputs":[],"stateMutability":"nonpayable","type":"function"}] 
-
+export const ALPINE_HEALTHCARE = "0x1e249431Df6ceeeF616d4d23d859A0F49A82aa32" 
+export const ALPINE_HEALTHCARE_ABI = [{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"addComputeNodeAccessForUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"checkIsActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getPDOSRoot","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserEncryptedDataKeys","outputs":[{"components":[{"internalType":"string","name":"dataKey","type":"string"},{"internalType":"string","name":"marketplaceKey","type":"string"}],"internalType":"struct AlpineHealthcare.EncryptedKeys","name":"","type":"tuple"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUsersComputeNode","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"getUsersForComputeNode","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"hasUserAccess","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_pdosHash","type":"string"},{"internalType":"string","name":"_encryptedDataKey","type":"string"}],"name":"onboard","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"removeComputeNodeAccessForUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"computeNode","type":"address"}],"name":"subscribeToMarketplaceItem","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"string","name":"_newHash","type":"string"}],"name":"updatePDOSRoot","outputs":[],"stateMutability":"nonpayable","type":"function"}] 
 export default class Auth extends Module {
 
   public authType : AuthType | undefined;
   public info: AuthInfo = {
     isAuthenticated: false,
     isActive: false,
-    pdosRoot: undefined
+    pdosRoot: undefined,
+    computeNodeAddress: undefined
   }
 
   public credentialId : string | undefined = undefined;
   public publicKey: string | undefined;
+
+
   private ethersProvider: ethers.BrowserProvider | undefined;
   private eip1193Provider: any;
+  private wallet: ethers.Wallet | undefined
+
+  private initStarted: boolean = false
 
   constructor(core : Core, private config : Config){
     super(core);
@@ -43,56 +61,51 @@ export default class Auth extends Module {
       info: observable,
       publicKey: observable,
     });
-    this.setProviders(config.eip1193Provider)
+
+    if (config.eip1193Provider) {
+      this.eip1193Provider = config.eip1193Provider
+    }
   }
 
-  public async initializePasskeyUser(
-    credentialId: string,
-  ) {
-    this.authType = AuthType.PASSKEY
-    await this.setCredentialId(credentialId)
-    this.authType = AuthType.PASSKEY
-    this.info.isAuthenticated = true
-    this.info.isActive = true
-    return
+  public async initializeWalletUserWithPrivateKey() {
+    this.authType = AuthType.WALLET
+    const wallet = new ethers.Wallet(this.config.privateKey, this.config.jsonRpcProvider);
+    this.wallet = wallet
+    const address = wallet.address
+    if (address) {
+      this.publicKey = address
+      console.log("address: ", address)
+    }
   }
 
-  public async initializeWalletUser() {
+  public async initializeWalletUser(eip1193Provider?: ethers.Eip1193Provider) {
+    if (this.initStarted) {
+      return
+    }
+
+    this.initStarted = true
+    if (eip1193Provider) {
+      this.eip1193Provider = eip1193Provider
+      this.ethersProvider = new ethers.BrowserProvider(eip1193Provider)
+    }
     this.authType = AuthType.WALLET
     let addresses: string[] = []
-    await this.disconnectWalletUser()
     addresses = await this.eip1193Provider.request({ method: 'eth_requestAccounts' });
     if (addresses.length > 0) {
       this.publicKey = addresses[0]
       await this.initInfoForWalletUser()
     }
-    return
   }
 
   public async disconnectWalletUser() {
-    await this.eip1193Provider.disconnect()
+    //await this.eip1193Provider.disconnect()
     this.info = {
       isActive: false,
       isAuthenticated: false,
-      pdosRoot: undefined
+      pdosRoot: undefined,
+      computeNodeAddress: undefined
     }
     this.publicKey = undefined
-  }
-
-  /** Passkey Support */
-  
-  public async setCredentialId(credentialId: string) {
-    this.credentialId = credentialId 
-    if (this.credentialId === "test") {
-      const initCredentialId = this.core.test?.initCredentialId
-      const userRes = await axios.get(this.core.gatewayURL +"/pdos/users/" + initCredentialId)
-      const user = userRes.data
-      await this.core.tree.root.init(user[1].hash_id)
-    } else {
-      const userRes = await axios.get(this.core.gatewayURL +"/pdos/users/" + this.credentialId)
-      const user = userRes.data
-      await this.core.tree.root.init(user[1].hash_id)
-    }
   }
 
   /** Wallet Support */
@@ -115,8 +128,8 @@ export default class Auth extends Module {
         })
         const newUserResponse = await newUser.json()
         const newPDOSRoot = (newUserResponse as any).hash_id
-        await this.onboard()
         this.info.pdosRoot = newPDOSRoot
+        await this.onboard(newPDOSRoot, "hi")
       } catch (e) {
         throw new Error("Failed onboarding user")
       }
@@ -133,91 +146,106 @@ export default class Auth extends Module {
     }
 
     this.info.isAuthenticated = true
+    this.info.computeNodeAddress = await this.getUserComputeNode()
+
+  }
+  
+  public async encrypt(data: object) {
+    const dataParsed = JSON.stringify(data)
+    if (!this.publicKey) {
+      return
+    }
+
+    const encrypted = aes.encrypt(
+      utf8ToBytes(dataParsed),
+      hexToBytes("2b7e151628aed2a6abf7158809cf4f3c"),
+      hexToBytes("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff")
+    )
+
+    return uint8ArrayToBase64(encrypted)
+  }
+  
+  public async decrypt(data: string) {
+    if (!this.publicKey) {
+      return
+    }
+
+    const decrypted = aes.decrypt(
+      base64ToUint8Array(data),
+      hexToBytes("2b7e151628aed2a6abf7158809cf4f3c"),
+      hexToBytes("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff")
+    )
+
+    return JSON.parse(bytesToUtf8(decrypted))
   }
 
-  public async getAccessPackage() {
-    return {
-      key1: "key1",
-      key2: "key2",
-      key3: "key3",
-      key4: "key4"
+  public async getSigner() {
+    if (this.ethersProvider) {
+      const signer = await this.ethersProvider.getSigner();
+      return signer
+    } else if (this.wallet) {
+      const signer = this.wallet
+      return signer
+    } else {
+      throw new Error("No signer available")
     }
   }
 
   public async checkIsActive() {
-    if (!this.ethersProvider) {
-      return
-    }
-
-    const signer = await this.ethersProvider.getSigner();
+    const signer = await this.getSigner();
     const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
-    const isActiveReturnValue = await contract.checkActive(this.publicKey);
+    const isActiveReturnValue = await contract.checkIsActive(this.publicKey);
     return isActiveReturnValue
   }
 
-  public async onboard(){
-    if (!this.ethersProvider) {
-      return
-    }
-
-    const signer = await this.ethersProvider.getSigner();
+  public async onboard(pdosHashId: string, encryptedDataKey: string){
+    const signer = await this.getSigner();
     const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
     const tx = await contract.onboard(
-      "key1",
-      "key2",
-      "key3",
-      "key4"
+      pdosHashId,
+      encryptedDataKey,
     );
 
-    const receipt = await tx.wait();
-    console.log("receipt", receipt)
-    console.log("hash", receipt.hash)
+    await tx.wait();
   }
 
-  public async getPDOSRoot() {
-    if (!this.ethersProvider) {
-      console.log("no ethers provider")
-      return
-    }
-
-    const signer = await this.ethersProvider.getSigner();
+  public async getPDOSRoot(address?: string) {
+    const signer = await this.getSigner();
     const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
-    const pdosRoot = await contract.getPDOSRoot(this.publicKey);
+    const pdosRoot = await contract.getPDOSRoot(address ?? this.publicKey);
     return pdosRoot 
   }
 
-  public async updatePDOSRoot(newHash: string){ 
-    if (!this.ethersProvider) {
-      return
-    }
-
-    const signer = await this.ethersProvider.getSigner();
+  public async updatePDOSRoot(newHash: string, address?: string){ 
+    const signer = await this.getSigner();
     const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
-    const tx = await contract.updatePDOSRoot(newHash);
+    const tx = await contract.updatePDOSRoot(address ?? this.publicKey, newHash);
 
-    const receipt = await tx.wait();
-    console.log("receipt", receipt)
-    console.log("hash", receipt.hash)
+    await tx.wait();
 
     this.info.pdosRoot = newHash
   }
 
-  public async setProviders(eip1193Provider: any){
-    this.eip1193Provider = eip1193Provider
-    this.ethersProvider = new ethers.BrowserProvider(eip1193Provider)
+  public async addComputeNodeAccessForUser(computeAddress: string){ 
+    const signer = await this.getSigner();
+    const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
+    const tx = await contract.addComputeNodeAccessForUser(computeAddress);
+
+    await tx.wait();
+
+    this.info.computeNodeAddress = computeAddress
   }
 
-  public async setEip1193Provider(provider: any) {
-    this.eip1193Provider = provider
+  public async getUsersForComputeNode(computeAddress: string){ 
+    const signer = await this.getSigner();
+    const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
+    return await contract.getUsersForComputeNode(computeAddress);
   }
 
-  public async setEthersProvider(provider: ethers.BrowserProvider) {
-    this.ethersProvider = provider
+  public async getUserComputeNode(){ 
+    const signer = await this.getSigner();
+    const contract = new ethers.Contract(ALPINE_HEALTHCARE, ALPINE_HEALTHCARE_ABI, signer);
+    return await contract.getUsersComputeNode(this.publicKey);
   }
-
-  public async setPublicKey(publicKey: string) {
-    this.publicKey = publicKey
-  }
-
 
 }

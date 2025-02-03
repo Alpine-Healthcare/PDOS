@@ -2,10 +2,12 @@ import AppManager from "./appManager/AppManager";
 import Notification from "./notification/Notification";
 import Auth from "./auth/Auth";
 import DataRequest from "./dataRequest/DataRequest";
+import Encryption from "./encryption/Encryption";
 
 export default { 
   appManager : AppManager,
-  notification : Notification,
   auth : Auth,
-  dataRequest: DataRequest
+  dataRequest: DataRequest,
+  encryption: Encryption,
+  notification : Notification,
 }

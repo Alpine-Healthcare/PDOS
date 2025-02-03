@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { SessionSigsMap } from '@lit-protocol/types';
 
 export declare const actions: {
     inbox: {
@@ -8,6 +9,7 @@ export declare const actions: {
     treatments: {
         getActiveTreatments: () => any;
         getTreatmentInstances: (treatment: string) => any[];
+        getTreatmentBinaryForTreatment: (treatment: PDFSNode) => Promise<any>;
         addTreatment: (name: string, hashId: string, intake: object) => Promise<void>;
     };
     data: {
@@ -33,28 +35,24 @@ declare class Auth extends Module {
     publicKey: string | undefined;
     private ethersProvider;
     private eip1193Provider;
+    private wallet;
+    private initStarted;
     constructor(core: Core, config: Config_2);
-    initializePasskeyUser(credentialId: string): Promise<void>;
-    initializeWalletUser(): Promise<void>;
+    initializeWalletUserWithPrivateKey(): Promise<void>;
+    initializeWalletUser(eip1193Provider?: ethers.Eip1193Provider): Promise<void>;
     disconnectWalletUser(): Promise<void>;
-    /** Passkey Support */
-    setCredentialId(credentialId: string): Promise<void>;
     /** Wallet Support */
     initInfoForWalletUser(): Promise<void>;
-    getAccessPackage(): Promise<{
-        key1: string;
-        key2: string;
-        key3: string;
-        key4: string;
-    }>;
+    encrypt(data: object): Promise<string | undefined>;
+    decrypt(data: string): Promise<any>;
+    getSigner(): Promise<ethers.Wallet | ethers.JsonRpcSigner>;
     checkIsActive(): Promise<any>;
-    onboard(): Promise<void>;
-    getPDOSRoot(): Promise<any>;
-    updatePDOSRoot(newHash: string): Promise<void>;
-    setProviders(eip1193Provider: any): Promise<void>;
-    setEip1193Provider(provider: any): Promise<void>;
-    setEthersProvider(provider: ethers.BrowserProvider): Promise<void>;
-    setPublicKey(publicKey: string): Promise<void>;
+    onboard(pdosHashId: string, encryptedDataKey: string): Promise<void>;
+    getPDOSRoot(address?: string): Promise<any>;
+    updatePDOSRoot(newHash: string, address?: string): Promise<void>;
+    addComputeNodeAccessForUser(computeAddress: string): Promise<void>;
+    getUsersForComputeNode(computeAddress: string): Promise<any>;
+    getUserComputeNode(): Promise<any>;
 }
 
 declare class Authentication extends Constant<AuthenticationState> {
@@ -75,6 +73,7 @@ declare interface AuthInfo {
     isAuthenticated: boolean;
     isActive: boolean;
     pdosRoot: string | undefined;
+    computeNodeAddress: string | undefined;
 }
 
 declare enum AuthType {
@@ -90,6 +89,8 @@ declare interface Config {
 
 declare interface Config_2 {
     eip1193Provider: any;
+    jsonRpcProvider: ethers.JsonRpcProvider;
+    privateKey: string;
 }
 
 declare interface Config_3 {
@@ -205,6 +206,24 @@ declare type DependencyInjection_2 = {
     reactNativeHealthKit: any;
 };
 
+declare class Encryption extends Module {
+    private config;
+    private litNodeClient;
+    constructor(core: Core, config: EncryptionConfig);
+    protected start(): Promise<void>;
+    encrypt(data: string): Promise<{
+        ciphertext: string;
+        dataToEncryptHash: string;
+    } | undefined>;
+    decrypt(ciphertext: string, dataToEncryptHash: string): Promise<{
+        decryptedString: string;
+    } | undefined>;
+    getSessionSignatures(): Promise<SessionSigsMap | undefined>;
+}
+
+declare interface EncryptionConfig {
+}
+
 declare interface ExpoDependencies {
     Notifications: any;
     Permissions: any;
@@ -252,6 +271,7 @@ declare class ModuleManager {
     notification?: Notification_2;
     auth?: Auth;
     dataRequest?: DataRequest;
+    encryption?: Encryption;
 }
 
 declare class Notification_2 extends Module {

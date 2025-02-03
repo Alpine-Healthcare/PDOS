@@ -46,11 +46,12 @@ export default class UserAccount extends PDFSNode {
     return false
   }
   
-  public async syncLocalRootHash(){
+  public async syncLocalRootHash(addressToUpdate?: string){
     if (this.core.modules.auth?.authType === AuthType.WALLET) {
-      const hashId = await this.core.modules.auth?.getPDOSRoot() 
+      const hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate) 
       if (this._hash !== hashId) {
-        await this.core.modules.auth.updatePDOSRoot(this._hash)
+        await this.core.modules.auth.updatePDOSRoot(this._hash, addressToUpdate ?? this.core.modules.auth.publicKey )
+        console.log("# pdos : new root - " + this._hash)
       }
     } 
   }

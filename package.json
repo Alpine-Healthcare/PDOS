@@ -16,7 +16,12 @@
     "test": "jest --watchAll"
   },
   "dependencies": {
+    "@lit-protocol/encryption": "^7.0.4",
+    "@lit-protocol/lit-node-client": "^7.0.4",
     "axios": "^1.7.2",
+    "buffer": "^6.0.3",
+    "eth-crypto": "^2.7.0",
+    "ethereum-cryptography": "^3.0.0",
     "ethers": "^6.13.5",
     "mobx": "6.0.4",
     "mobx-react": "^9.1.1",

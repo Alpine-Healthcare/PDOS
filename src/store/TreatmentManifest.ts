@@ -33,11 +33,13 @@ export default class TreatmentManifest extends PDFSNode {
   ) {
     await this.addChild(
       Treatment,
-      treatmentName,
+      crypto.randomUUID(),
       {
         "is_active": true,
         "active_on": new Date().toISOString(),
-        "intake": intakeObject
+        "intake": intakeObject,
+        "treatmentName": treatmentName,
+        "treatmentBinaryHash": treatmentBinaryHash
       },
       {
         "e_out_TreatmentBinary": treatmentBinaryHash 

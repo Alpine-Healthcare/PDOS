@@ -1,7 +1,7 @@
 import pdos, { Core } from "./Core";
 import { getAllRecords, sync } from "./actions/Data";
 import { clearMessages, getMessages } from "./actions/Inbox";
-import { addTreatment, getActiveTreatments, getTreatmentInstances } from "./actions/Treatments";
+import { addTreatment, getActiveTreatments, getTreatmentBinaryForTreatment, getTreatmentInstances } from "./actions/Treatments";
 import PDFSNode from "./store/PDFSNode";
 
 export const actions = {
@@ -12,6 +12,7 @@ export const actions = {
   treatments: {
     getActiveTreatments,
     getTreatmentInstances,
+    getTreatmentBinaryForTreatment,
     addTreatment
   },
   data: {
