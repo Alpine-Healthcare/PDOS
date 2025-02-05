@@ -1,0 +1,1 @@
+{"version":3,"file":"Treatments.d.ts","sourceRoot":"","sources":["../../src/actions/Treatments.ts"],"names":[],"mappings":"AACA,OAAO,QAAQ,MAAM,mBAAmB,CAAA;AAGxC,eAAO,MAAM,YAAY,SAAgB,MAAM,UAAU,MAAM,UAAU,MAAM,kBAG9E,CAAA;AAED,eAAO,MAAM,mBAAmB,WAU/B,CAAA;AAED,eAAO,MAAM,8BAA8B,cAAqB,QAAQ,iBAEvE,CAAA;AAED,eAAO,MAAM,YAAY,cAAe,MAAM,QAI7C,CAAA;AAED,eAAO,MAAM,qBAAqB,cAAe,MAAM,UActD,CAAA"}
