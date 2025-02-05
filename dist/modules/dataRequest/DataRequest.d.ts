@@ -1,5 +1,5 @@
-import { default as Module } from '../Module';
-import { Core } from '../..';
+import Module from "../Module";
+import { Core } from "../..";
 interface Config {
 }
 type DependencyInjection = {

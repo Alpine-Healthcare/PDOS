@@ -1,4 +1,4 @@
-import { default as Constant } from './libs/Constant';
+import Constant from "./libs/Constant";
 export declare enum PlatformState {
     Web = 0,
     Mobile = 1,

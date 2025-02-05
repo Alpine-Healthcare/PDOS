@@ -1,4 +1,4 @@
-import { Core } from '../Core';
+import { Core } from "../Core";
 export default class PDFSNode {
     protected core: Core;
     _nodeType: string;

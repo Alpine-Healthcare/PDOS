@@ -1,6 +1,6 @@
-import { default as Module } from '../Module';
-import { Core } from '../../Core';
-import { ExpoDependencies } from './platforms/Expo';
+import Module from "../Module";
+import { Core } from "../../Core";
+import { ExpoDependencies } from "./platforms/Expo";
 interface MobileConfig {
     type: "expo";
     pushTokenEndpoint: string;

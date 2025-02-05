@@ -1,4 +1,4 @@
-import { default as Lifecycle } from '../Lifecycle';
+import Lifecycle from "../Lifecycle";
 export interface MobileLifecycleDependencies {
     AppState: any;
 }

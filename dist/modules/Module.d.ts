@@ -1,5 +1,5 @@
-import { Core } from '..';
-import { default as ModuleManager } from './ModuleManager';
+import { Core } from "..";
+import ModuleManager from "./ModuleManager";
 interface Dependencies {
     package: string;
     version: string;

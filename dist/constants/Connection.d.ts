@@ -1,4 +1,4 @@
-import { default as Constant } from './libs/Constant';
+import Constant from "./libs/Constant";
 export declare enum ConnectionState {
     ERROR = 0,
     CONNECTED = 1,

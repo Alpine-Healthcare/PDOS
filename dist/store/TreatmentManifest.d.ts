@@ -1,6 +1,6 @@
-import { Core } from '../Core';
-import { default as PDFSNode } from './PDFSNode';
-import { default as Treatment } from './Treatment';
+import { Core } from "../Core";
+import PDFSNode from "./PDFSNode";
+import Treatment from "./Treatment";
 export default class TreatmentManifest extends PDFSNode {
     static _nodeType: string;
     constructor(core: Core, treePath: string[], instanceType?: string, hash?: string);

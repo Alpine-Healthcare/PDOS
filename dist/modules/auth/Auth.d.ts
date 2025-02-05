@@ -1,6 +1,6 @@
-import { default as Module } from '../Module';
-import { Core } from '../..';
-import { ethers } from 'ethers';
+import Module from "../Module";
+import { Core } from "../..";
+import { ethers } from "ethers";
 export declare enum AuthType {
     WALLET = 0,
     PASSKEY = 1

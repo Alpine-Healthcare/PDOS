@@ -1,5 +1,5 @@
-import { default as pdos, Core } from './Core';
-import { default as PDFSNode } from './store/PDFSNode';
+import pdos, { Core } from "./Core";
+import PDFSNode from "./store/PDFSNode";
 export declare const actions: {
     inbox: {
         getMessages: () => Promise<any>;

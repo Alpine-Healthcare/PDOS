@@ -1,8 +1,8 @@
-import { MobileLifecycleDependencies } from './platforms/Mobile';
-import { default as Module } from '../Module';
-import { Core } from '../..';
-import { PlatformState } from '../../constants/Platform';
-import { default as Lifecycle } from './Lifecycle';
+import { MobileLifecycleDependencies } from "./platforms/Mobile";
+import Module from "../Module";
+import { Core } from "../..";
+import { PlatformState } from "../../constants/Platform";
+import Lifecycle from "./Lifecycle";
 interface Config {
     platforms: PlatformState[];
 }

@@ -1,6 +1,6 @@
-import { default as Authentication } from './Authentication';
-import { default as Connection } from './Connection';
-import { default as Platform } from './Platform';
+import Authentication from "./Authentication";
+import Connection from "./Connection";
+import Platform from "./Platform";
 export default class ConstantsManager {
     authentication: Authentication;
     connection: Connection;

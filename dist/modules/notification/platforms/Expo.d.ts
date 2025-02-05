@@ -1,6 +1,6 @@
-import { default as NotificationClass } from '../AbstractNotification';
-import { Core } from '../../../Core';
-import { NotificationConfig } from '../Notification';
+import NotificationClass from "../AbstractNotification";
+import { Core } from "../../../Core";
+import { NotificationConfig } from "../Notification";
 export interface ExpoDependencies {
     Notifications: any;
     Permissions: any;

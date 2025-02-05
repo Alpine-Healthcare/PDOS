@@ -1,6 +1,9 @@
-import { default as PDFSNode } from './store/PDFSNode';
-import { default as ModuleManager } from './modules/ModuleManager';
-import { default as ConstantsManager } from './constants/ConstantsManager';
+import PDFSNode from "./store/PDFSNode";
+import ModuleManager from "./modules/ModuleManager";
+/**
+ * Constants
+ */
+import ConstantsManager from "./constants/ConstantsManager";
 export declare let coreConstants: ConstantsManager;
 declare let pdos: () => Core;
 export default pdos;
@@ -12,7 +15,7 @@ interface Context {
     isComputeNode?: boolean;
 }
 interface CoreConfig {
-    env: 'production' | 'development' | 'test' | 'sepolia';
+    env: 'marigold';
     context: Context;
     test?: TestConfiguration;
     modules?: any;

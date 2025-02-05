@@ -1,4 +1,4 @@
-import { default as Constant } from './libs/Constant';
+import Constant from "./libs/Constant";
 export declare enum AuthenticationState {
     SUCCESS = 0,
     EMAIL_CONFIRMATION = 1,

@@ -1,4 +1,4 @@
-import { default as PDFSNode } from './PDFSNode';
+import PDFSNode from "./PDFSNode";
 export declare const NetworkMapper: any;
 export declare const addNodeToNetworkMapper: (nodeType: string, nodeClass: any) => any;
 export declare const traverseTree: (root: PDFSNode, callback: (node: PDFSNode) => void) => void;

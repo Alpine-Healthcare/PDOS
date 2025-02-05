@@ -1,6 +1,6 @@
-import { default as NotificationClass } from '../AbstractNotification';
-import { Core } from '../../../Core';
-import { NotificationConfig } from '../Notification';
+import NotificationClass from "../AbstractNotification";
+import { Core } from "../../../Core";
+import { NotificationConfig } from "../Notification";
 export declare enum WebDependencies {
     window = 0
 }
