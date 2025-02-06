@@ -1,1 +1,0 @@
-{"version":3,"file":"Mobile.d.ts","sourceRoot":"","sources":["../../../../src/modules/appManager/platforms/Mobile.ts"],"names":[],"mappings":"AACA,OAAO,SAA6B,MAAM,cAAc,CAAC;AAEzD,MAAM,WAAW,2BAA2B;IACxC,QAAQ,EAAG,GAAG,CAAA;CACjB;AAED,MAAM,CAAC,OAAO,OAAO,eAAgB,SAAQ,SAAS;IAEtC,OAAO,CAAC,YAAY;gBAAZ,YAAY,EAAE,2BAA2B;IAI7D,SAAS,CAAC,KAAK;CA8BlB"}

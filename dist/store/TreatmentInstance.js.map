@@ -1,1 +1,0 @@
-{"version":3,"file":"TreatmentInstance.js","sourceRoot":"","sources":["../../src/store/TreatmentInstance.ts"],"names":[],"mappings":"AACA,OAAO,QAAQ,MAAM,YAAY,CAAC;AAElC,MAAM,CAAC,OAAO,OAAO,iBAAkB,SAAQ,QAAQ;IAC9C,MAAM,CAAC,SAAS,GAAG,uBAAuB,CAAA;IAEjD,YACE,IAAW,EACX,QAAkB,EAClB,YAAgC,EAChC,IAAa;QAEb,KAAK,CAAC,IAAI,EAAE,QAAQ,EAAE,sBAAsB,GAAG,YAAY,EAAE,IAAI,CAAE,CAAA;IACrE,CAAC"}
