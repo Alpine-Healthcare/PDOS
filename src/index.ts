@@ -19,9 +19,7 @@ export const actions = {
     sync,
     getAllRecords
   }
-}
-
-export { Core, PDFSNode }
-export default pdos;
+};
 
 
+export { Core, PDFSNode, pdos};

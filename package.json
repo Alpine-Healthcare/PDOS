@@ -3,14 +3,21 @@
   "version": "0.0.62",
   "license": "MIT",
   "outputPath": "dist",
-  "exports": {
-    ".": {
-      "import": "./dist/pdos.mjs",
-      "require": "./dist/pdos.umd.js"
-    }
-  },
-  "browser": "./dist/pdos.umd.js",
   "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.es.js",
+  "browser": "dist/index.umd.js",
+  "react-native": "dist/index.es.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.es.js",
+    "require": "./dist/index.cjs",
+    "browser": "./dist/index.umd.js",
+    "react-native": "./dist/index.es.js"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "watch": "tsc -w",
     "build": "tsc && vite build",

@@ -1,26 +1,48 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
 import dts from 'vite-plugin-dts';
 
-// https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [
+    dts({
+      insertTypesEntry: true, // Generates a .d.ts entry
+    }),
+  ],
   build: {
     lib: {
-      name: "PDOS", // Exposes `PDOS` globally in UMD & IIFE
-      entry: resolve(__dirname, 'src/index.ts'),
-      formats: ['es', 'cjs', 'system', 'umd', 'iife'], // Supports multiple formats
-      fileName: (format) => `pdos.${format}.js`, // Generates named files
+      entry: 'src/index.ts',
+      name: 'PDOS', // Global name used for UMD builds
+      formats: ['es', 'cjs', 'umd'],
+      fileName: (format) => {
+        if (format === 'cjs') {
+          // Output as .cjs to force Node to treat it as CommonJS
+          return 'index.cjs';
+        }
+        if (format === 'es') {
+          return 'index.es.js';
+        }
+        if (format === 'umd') {
+          return 'index.umd.js';
+        }
+        return `index.${format}.js`;
+      },
     },
-    minify: false, // Set true for production
-    sourcemap: true, // Helps with debugging
-    emptyOutDir: false, // Prevents cleaning the `dist` folder
-  },
-  resolve: {
-    alias: {
-      src: resolve('src/'),
+    rollupOptions: {
+      // For UMD builds, specify dependencies as external so they won’t be bundled
+      external: [
+        'react',
+        'react-dom',
+      ],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+          mobx: 'mobx',
+          'mobx-react': 'mobxReact',
+          ethers: 'ethers',
+          axios: 'axios',
+          // Include other external libraries here
+        },
+      },
     },
   },
-  plugins: [
-    dts({ rollupTypes: true }),
-  ],
 });

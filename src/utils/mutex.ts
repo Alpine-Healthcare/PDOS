@@ -1,5 +1,5 @@
 import axios from "axios";
-import pdos from "..";
+import  { pdos } from "..";
     
 interface MutexInfo {
   acquired: boolean,
