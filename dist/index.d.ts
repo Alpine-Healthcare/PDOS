@@ -216,7 +216,7 @@ declare class Encryption extends Module {
     private litNodeClient;
     private accessPackage;
     private accessPackageEncrypted;
-    constructor(core: Core, config: null);
+    constructor(core: Core, config: EncryptionConfig);
     protected start(): Promise<void>;
     generateAccessPackage(): Promise<AccessPackageEncrypted | undefined>;
     setAccessPackage(root: PDFSNode): Promise<void>;
@@ -225,6 +225,10 @@ declare class Encryption extends Module {
     encryptWithLit(data: string): Promise<AccessPackageEncrypted | undefined>;
     decryptWithLit(ciphertext: string, dataToEncryptHash: string): Promise<string>;
     getSessionSignatures(): Promise<SessionSigsMap>;
+}
+
+declare interface EncryptionConfig {
+    enabled?: boolean;
 }
 
 declare interface ExpoDependencies {
