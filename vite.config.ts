@@ -36,11 +36,6 @@ export default defineConfig({
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
-          mobx: 'mobx',
-          'mobx-react': 'mobxReact',
-          ethers: 'ethers',
-          axios: 'axios',
-          // Include other external libraries here
         },
       },
     },
