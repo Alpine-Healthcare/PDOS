@@ -103,6 +103,10 @@ export class Core {
         throw new ConfigValidationError("Invalid environment given."); 
       }
 
+      if (!config.context.gatewayURL){
+        throw new ConfigValidationError("Gateway URL is required.");
+      }
+
     }
 
     public get initConfig(){

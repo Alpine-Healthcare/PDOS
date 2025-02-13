@@ -70,6 +70,7 @@ export default class Auth extends Module {
     private wallet;
     private initStarted;
     constructor(core: Core, config: Config);
+    setPublicKey(publicKey: string): void;
     initializeWalletUserWithPrivateKey(): Promise<void>;
     initializeWalletUser(eip1193Provider?: ethers.Eip1193Provider): Promise<void>;
     disconnectWalletUser(): Promise<void>;

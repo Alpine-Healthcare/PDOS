@@ -65,6 +65,11 @@ export default class Auth extends Module {
     }
   }
 
+  public setPublicKey(publicKey: string) {
+    console.log("setting public key", publicKey)
+    this.publicKey = publicKey
+  }
+
   public async initializeWalletUserWithPrivateKey() {
     this.authType = AuthType.WALLET
     const wallet = new ethers.Wallet(this.config.privateKey, this.config.jsonRpcProvider);
@@ -91,6 +96,7 @@ export default class Auth extends Module {
     addresses = await this.eip1193Provider.request({ method: 'eth_requestAccounts' });
     if (addresses.length > 0) {
       this.publicKey = addresses[0]
+      this.publicKey = (await this.getSigner()).address 
       await this.initInfoForWalletUser()
     }
   }
@@ -138,6 +144,7 @@ export default class Auth extends Module {
         this.info.pdosRoot = newPDOSRoot
         this.initStep = InitSteps.GENERATING_ENCRYPTION_KEYS
         generatedAccessPackageEncrypted = await this.core.modules.encryption?.generateAccessPackage()
+        console.log("generatedAccessPackageEncrypted", generatedAccessPackageEncrypted)
       } catch (e) {
         throw new Error("Failed onboarding user")
       }
@@ -146,6 +153,7 @@ export default class Auth extends Module {
     if (isNewUser) {
       this.initStep = InitSteps.INITIALIZING_PDOS
     }
+
     await this.core.tree.root.init(this.info.pdosRoot)
     console.log("# pdos - initial root hash ", this.core.tree.root._hash)
 
@@ -156,7 +164,7 @@ export default class Auth extends Module {
       this.initStep = InitSteps.COMPLETED
     } else {
       await this.core.tree.root.syncLocalRootHash()
-      await this.core.modules.encryption?.setAccessPackage(this.core.tree.root)
+      await this.core.modules.encryption?.setAccessPackage(this.core.tree.root._rawNode.access_package)
     }
 
     this.info.pdosRoot = this.core.tree.root._hash
