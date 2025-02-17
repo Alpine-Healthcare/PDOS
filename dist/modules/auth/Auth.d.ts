@@ -63,12 +63,12 @@ export default class Auth extends Module {
     authType: AuthType | undefined;
     info: AuthInfo;
     initStep: InitSteps | undefined;
+    initStarted: boolean;
     credentialId: string | undefined;
     publicKey: string | undefined;
     private ethersProvider;
     private eip1193Provider;
     private wallet;
-    private initStarted;
     constructor(core: Core, config: Config);
     setPublicKey(publicKey: string): void;
     initializeWalletUserWithPrivateKey(): Promise<void>;
@@ -76,6 +76,7 @@ export default class Auth extends Module {
     disconnectWalletUser(): Promise<void>;
     /** Wallet Support */
     initInfoForWalletUser(): Promise<void>;
+    getAccessPackageFromRoot(root_hash: string): Promise<any>;
     getSigner(): Promise<ethers.Wallet | ethers.JsonRpcSigner>;
     checkIsActive(): Promise<any>;
     onboard(pdosHashId: string, encryptedDataKey: string): Promise<void>;

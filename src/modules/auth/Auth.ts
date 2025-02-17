@@ -3,6 +3,7 @@ import Module from "../Module";
 import { Core } from "../..";
 import { ethers, } from "ethers";
 import { makeObservable, observable } from "mobx";
+import { getFromPdfs } from "../../store/Pdfs";
 
 export enum AuthType {
   WALLET,
@@ -42,6 +43,7 @@ export default class Auth extends Module {
     computeNodeAddress: undefined
   }
   public initStep: InitSteps | undefined;
+  public initStarted: boolean = false
 
   public credentialId : string | undefined = undefined;
   public publicKey: string | undefined;
@@ -51,7 +53,6 @@ export default class Auth extends Module {
   private eip1193Provider: any;
   private wallet: ethers.Wallet | undefined
 
-  private initStarted: boolean = false
 
   constructor(core : Core, private config : Config){
     super(core);
@@ -154,26 +155,36 @@ export default class Auth extends Module {
       this.initStep = InitSteps.INITIALIZING_PDOS
     }
 
-    await this.core.tree.root.init(this.info.pdosRoot)
-    console.log("# pdos - initial root hash ", this.core.tree.root._hash)
 
     if (isNewUser) {
       await this.core.tree.root.addAccessPackage(generatedAccessPackageEncrypted)
       this.initStep = InitSteps.ONBOARDING
       await this.onboard(this.core.tree.root._hash, "")
+      await this.core.tree.root.init(this.info.pdosRoot)
+      await this.core.tree.root.syncLocalRootHash()
       this.initStep = InitSteps.COMPLETED
     } else {
-      await this.core.modules.encryption?.setAccessPackage(this.core.tree.root._rawNode.access_package)
+      if (!this.info.pdosRoot) {
+        throw new Error("Unexpected state, no pdosRoot for existing user")
+      }
+      const accessPackage = await this.getAccessPackageFromRoot(this.info.pdosRoot)
+      await this.core.modules.encryption?.setAccessPackage(accessPackage)
       await this.core.tree.root.init(this.info.pdosRoot)
       await this.core.tree.root.syncLocalRootHash()
     }
 
+    console.log("# pdos - initial root hash ", this.core.tree.root._hash)
 
     this.info.pdosRoot = this.core.tree.root._hash
     this.info.isAuthenticated = true
     this.info.computeNodeAddress = await this.getUserComputeNode()
     this.info.isActive = true
     this.initStep = InitSteps.COMPLETED
+  }
+
+  public async getAccessPackageFromRoot(root_hash: string) {
+    const root = await getFromPdfs(root_hash)
+    return root.access_package
   }
   
   public async getSigner() {

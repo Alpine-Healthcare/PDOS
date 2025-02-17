@@ -110,7 +110,6 @@ export default class UserAccount extends PDFSNode {
 
     this.isRefreshing = false
     this._hash = updateTreePath[0]
-    this.core.tree.root = this
   }
 
 }
