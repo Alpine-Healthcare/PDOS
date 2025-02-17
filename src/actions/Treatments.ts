@@ -10,8 +10,8 @@ export const addTreatment = async (name: string, hashId: string, intake: object)
 export const getActiveTreatments = () => {
   const activeTreatments =
     pdos().
-      stores.
-      userAccount?.
+      tree.
+      root.
       edges?.
       e_out_TreatmentManifest?.
       treatments ?? []

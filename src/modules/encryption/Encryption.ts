@@ -19,23 +19,16 @@ import {
   generateAuthSig,
 } from "@lit-protocol/auth-helpers";
 import * as aes from "ethereum-cryptography/aes.js";
-import PDFSNode from "../../store/PDFSNode";
 
 
 const accessCondition = (address: string) => ([{
   chain: "baseSepolia",  // e.g. "ethereum", "polygon", "mumbai", etc.
   contractAddress: ALPINE_HEALTHCARE,
   functionName: "hasUserAccess",
-  functionParams: [address],  // Lit will replace :userAddress with the requesting user's address
+  functionParams: [],  // Lit will replace :userAddress with the requesting user's address
   functionAbi: {
     name: "hasUserAccess",
-    inputs: [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      }
-    ],
+    inputs: [],
     outputs: [
       {
         internalType: "bool",
@@ -53,22 +46,22 @@ const accessCondition = (address: string) => ([{
   }
 }]);
 
-const capacityDelegationAuthSig ={
-  sig: '0x288b2e409856b40d3b49d7500c843959799cc7dfafd2ded49d74e40ddbe0a7ec26cc33618dd74e5f631f464c4e3dc02cb17c25229343856214fbeb38b007df191c',
+const capacityDelegationAuthSig = {
+  sig: '0xa538c495ba070b8aa0a360f420b8e530d7778f19a6f51e816133e0b17c4519df31fbf170c6b0c6fa0c6329b2698296da324260caa0eaa6075ad4e9eb1b825d661b',
   derivedVia: 'web3.eth.personal.sign',
   signedMessage: 'localhost wants you to sign in with your Ethereum account:\n' +
     '0xe4d172EE62f88Ba29D051D60620fEBB308B81F4E\n' +
     '\n' +
-    "This is a test statement.  You can put anything you want here. I further authorize the stated URI to perform the following actions on my behalf: (1) 'Auth': 'Auth' for 'lit-ratelimitincrease://117166'.\n" +
+    "This is a test statement.  You can put anything you want here. I further authorize the stated URI to perform the following actions on my behalf: (1) 'Auth': 'Auth' for 'lit-ratelimitincrease://120085'.\n" +
     '\n' +
     'URI: lit:capability:delegation\n' +
     'Version: 1\n' +
     'Chain ID: 1\n' +
-    'Nonce: 0xe1fbec40e2998405cfa484773d3ce940247fa18aca32b8de21d388d4131f66c9\n' +
-    'Issued At: 2025-02-11T21:06:11.768Z\n' +
-    'Expiration Time: 2025-02-18T19:46:11.764Z\n' +
+    'Nonce: 0x70c2a495bbe0b7705b363d589e74b519f2af71fd9e9769fc99303a648b23983d\n' +
+    'Issued At: 2025-02-15T15:56:32.444Z\n' +
+    'Expiration Time: 2025-02-22T14:36:32.441Z\n' +
     'Resources:\n' +
-    '- urn:recap:eyJhdHQiOnsibGl0LXJhdGVsaW1pdGluY3JlYXNlOi8vMTE3MTY2Ijp7IkF1dGgvQXV0aCI6W3siZGVsZWdhdGVfdG8iOlsiQ2JjMTFFNTM0MDc3YTE4MTQ3NmM3YTVjNTExYTVmZmI0YzE3ZEI2NSJdLCJuZnRfaWQiOlsiMTE3MTY2Il0sInVzZXMiOiIxMDAwIn1dfX0sInByZiI6W119',
+    '- urn:recap:eyJhdHQiOnsibGl0LXJhdGVsaW1pdGluY3JlYXNlOi8vMTIwMDg1Ijp7IkF1dGgvQXV0aCI6W3siZGVsZWdhdGVfdG8iOlsiQ2JjMTFFNTM0MDc3YTE4MTQ3NmM3YTVjNTExYTVmZmI0YzE3ZEI2NSJdLCJuZnRfaWQiOlsiMTIwMDg1Il0sInVzZXMiOiIxMDAwIn1dfX0sInByZiI6W119',
   address: '0xe4d172EE62f88Ba29D051D60620fEBB308B81F4E'
 }
 
@@ -96,12 +89,8 @@ interface EncryptionConfig {
 
 export default class Encryption extends Module {
   private litNodeClient: LitJsSdk.LitNodeClient | undefined
-  private accessPackage: AccessPackage | undefined
+  public accessPackage: AccessPackage | undefined
   private accessPackageEncrypted: AccessPackageEncrypted | undefined
-
-  private portalEmit: ((message: string, prop: string, data: string) => void) | undefined
-  private checkPortalMessages: ((type: string) => any) | undefined
-
 
   constructor(core : Core, private config : EncryptionConfig) {
     super(core);
@@ -121,25 +110,6 @@ export default class Encryption extends Module {
       });
       
     await this.litNodeClient.connect();
-  }
-
-  public setPortalSend(emit: (message: string, prop: string, data: string) => void) {
-    this.portalEmit = emit
-  }
-
-  public setPortalReceive(checkReceivedMessages: (type: string) => any) {
-    this.checkPortalMessages = checkReceivedMessages
-  }
-
-  public async portal<t>(type: string, prop?: string, data?: any) {
-    console.log("emitting with: ", type, prop, data)
-    console.log("this.portalEmit: ", this.portalEmit)
-    if (!this.portalEmit) {
-      throw new Error("Portal emit not set")
-    }
-    this.portalEmit(type, prop ?? '', data ?? '')
-    const portalResponse = await this.checkPortalMessages?.(type)
-    return portalResponse as t
   }
 
   public async generateAccessPackage(): Promise<AccessPackageEncrypted | undefined> {
@@ -166,7 +136,6 @@ export default class Encryption extends Module {
       throw new Error("Failed to encrypt access package with Lit")
     }
 
-
     this.accessPackage = accessPackage;
     await this.core.modules.storage?.addItem(PDOS_ACCESS_PACKAGE, JSON.stringify(accessPackage))
 
@@ -192,21 +161,25 @@ export default class Encryption extends Module {
     }
 
     if (this.config.portal === 'owner') {
-      console.log("tihs.acess package: ", this.accessPackageEncrypted)
       const portalResponse = await this.portal("setAccessPackage", "accessPackageEncrypted", JSON.stringify(this.accessPackageEncrypted))
-      console.log("portalREsponse: ", portalResponse)
+      if (portalResponse) {
+        this.accessPackage = portalResponse as AccessPackage
+      }
     } else {
-      console.log("decrypting with lit")
       const decryptedAccessPackage = await this.decryptWithLit(this.accessPackageEncrypted?.ciphertext, this.accessPackageEncrypted?.dataToEncryptHash)
 
       if (!decryptedAccessPackage) {
         throw new Error("Failed to decrypt access package with Lit")
       }
 
-      this.accessPackage = JSON.parse(decryptedAccessPackage)
+      if (this.config.portal === 'remote') {
+        this.portalEmit?.("setAccessPackage", "accessPackage", decryptedAccessPackage)
+      }
 
+      this.accessPackage = JSON.parse(decryptedAccessPackage)
     }
 
+    await this.core.modules.storage?.addItem(PDOS_ACCESS_PACKAGE, JSON.stringify(this.accessPackage))
   }
 
   public async encryptNode(data: string | object) {
@@ -269,23 +242,17 @@ export default class Encryption extends Module {
       throw new Error("Missing publickey, litNodeClient, or sessionSigs")
     }
 
-    console.log("publickye: ", this.core.modules.auth?.publicKey)
-    if (this.portalEmit) {
-      this.portalEmit("random", "calling decrypt in lit", "")
-
-    }
     // Decrypt the message
     const decryptedString = await decryptToString(
       {
         evmContractConditions: accessCondition(this.core.modules.auth?.publicKey) as any,
-        chain: "ethereum",
+        chain: "baseSepolia",
         ciphertext,
         dataToEncryptHash,
         sessionSigs,
       },
       this.litNodeClient,
     );
-
 
     // Return the decrypted string
     return decryptedString;
@@ -308,9 +275,6 @@ export default class Encryption extends Module {
   }
 
   public async getSessionSignatures(){
-
-    console.log("gettin session sigs")
-
 
     if (!this.litNodeClient || !this.core.modules.auth?.publicKey) {
       throw new Error("Missing litNodeClient, publickey, or signer")
@@ -347,19 +311,11 @@ export default class Encryption extends Module {
       });
 
       if (this.config.portal === 'remote') {
-        if (this.portalEmit) {
-          this.portalEmit("random", "want a sign", "")
-        }
         const authSig: unknown = await this.portal("signRequest", "toSign", JSON.stringify(toSign))
-        if (this.portalEmit) {
-
-        this.portalEmit("random", "got authSig", JSON.stringify(authSig))
-        }
         return authSig as AuthSig
       } else {
         return await this.getAuthSig(toSign);
       }
-
 
     }
  
@@ -380,18 +336,10 @@ export default class Encryption extends Module {
         authNeededCallback: authNeededCallback as any,
         capacityDelegationAuthSig, 
     });
-    console.log("returning session sigs")
-    if (this.portalEmit) {
-     this.portalEmit("random", "returnign session sigs", "")
-    }
     return sessionSigs;
 
     } catch (error) {
-
-      if (this.portalEmit) {
-        this.portalEmit("error", "error", JSON.stringify(error))
-      }
-
+      this.portalEmit?.("error", "error", JSON.stringify(error))
     }
    
  }

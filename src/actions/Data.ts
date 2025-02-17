@@ -31,7 +31,7 @@ export const sync = async () => {
 }
 
 export const getAllRecords = () => {
-  const dataManifest = pdos().stores.userAccount.edges.e_out_DataManifest
+  const dataManifest = pdos().tree.root.edges.e_out_DataManifest
 
   const metrics: any = {}
   if (!dataManifest) {

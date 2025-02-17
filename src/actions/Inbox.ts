@@ -1,9 +1,9 @@
 import pdos from "../Core"
 
 export const clearMessages = async () => {
-  await pdos().stores.userAccount.edges.e_out_Inbox.clearMessages()
+  await pdos().tree.root.edges.e_out_Inbox.clearMessages()
 }
 
 export const getMessages = async () => {
-  return pdos().stores.userAccount.edges.e_out_Inbox._rawNode.unread_messages
+  return pdos().tree.root.edges.e_out_Inbox._rawNode.unread_messages
 }

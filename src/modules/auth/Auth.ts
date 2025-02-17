@@ -163,9 +163,11 @@ export default class Auth extends Module {
       await this.onboard(this.core.tree.root._hash, "")
       this.initStep = InitSteps.COMPLETED
     } else {
-      await this.core.tree.root.syncLocalRootHash()
       await this.core.modules.encryption?.setAccessPackage(this.core.tree.root._rawNode.access_package)
+      await this.core.tree.root.init(this.info.pdosRoot)
+      await this.core.tree.root.syncLocalRootHash()
     }
+
 
     this.info.pdosRoot = this.core.tree.root._hash
     this.info.isAuthenticated = true

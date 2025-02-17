@@ -69,7 +69,7 @@ export default class PDFSNode {
           try {
             this._rawNode.data = await this.core.modules.encryption?.decryptNode(this._rawNode.data) 
           } catch (e) {
-            throw new Error("Failed to decrypt data")
+            console.log("failed to decrypt")
           }
         }
         this._nodeType = this._rawNode.type

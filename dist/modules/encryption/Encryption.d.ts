@@ -15,15 +15,10 @@ interface EncryptionConfig {
 export default class Encryption extends Module {
     private config;
     private litNodeClient;
-    private accessPackage;
+    accessPackage: AccessPackage | undefined;
     private accessPackageEncrypted;
-    private portalEmit;
-    private checkPortalMessages;
     constructor(core: Core, config: EncryptionConfig);
     protected start(): Promise<void>;
-    setPortalSend(emit: (message: string, prop: string, data: string) => void): void;
-    setPortalReceive(checkReceivedMessages: (type: string) => any): void;
-    portal<t>(type: string, prop?: string, data?: any): Promise<t>;
     generateAccessPackage(): Promise<AccessPackageEncrypted | undefined>;
     setAccessPackage(accessPackageEncrypted: AccessPackageEncrypted): Promise<void>;
     encryptNode(data: string | object): Promise<string>;
