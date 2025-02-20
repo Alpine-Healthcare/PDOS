@@ -27,7 +27,7 @@ export default class DataManifest extends PDFSNode {
   }
   
   public async getDataGroup(metric: string) {
-    return Object.values(this.edges).find((edge) => edge._rawNode.metric === metric)
+    return Object.values(this.edges).find((edge) => edge._rawNode.data.metric === metric)
   }
 
   public async addDataGroup(

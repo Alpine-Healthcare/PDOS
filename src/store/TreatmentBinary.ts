@@ -55,6 +55,8 @@ export default class TreatmentBinary extends PDFSNode {
 
       const dataGroup = getDataGroup(metric)
 
+      console.log("dataGroup: ", dataGroup)
+
       await dataGroup.updateData()
     }
   }

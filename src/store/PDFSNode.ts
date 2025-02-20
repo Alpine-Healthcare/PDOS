@@ -199,11 +199,11 @@ export default class PDFSNode {
     if (unencrypted) {
       this._rawNodeUpdate = rawNodeUpdate
     } else {
+      const encrypted = await pdos().modules.encryption?.encryptNode(rawNodeUpdate)
       nodeUpdate = {
-        data: rawNodeUpdate
+        data: encrypted 
       }
-      const encrypted = await pdos().modules.encryption?.encryptNode(nodeUpdate)
-      this._rawNodeUpdate = encrypted 
+      this._rawNodeUpdate = nodeUpdate 
     }
 
     this._hash=""
@@ -247,7 +247,6 @@ export default class PDFSNode {
     const encrypted = await pdos().modules.encryption?.encryptNode(nodeUpdate)
 
     const nodeUpdateEncrypted = {
-      ...nodeUpdate,
       data: encrypted
     }
 
