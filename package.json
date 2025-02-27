@@ -1,6 +1,6 @@
 {
   "name": "@alpinehealthcare/pdos",
-  "version": "0.0.62",
+  "version": "0.0.63",
   "author": "Sanat Shah",
   "repository": "https://github.com/alpinehealthcare/pdos",
   "license": "MIT",
@@ -24,7 +24,8 @@
     "watch": "tsc -w",
     "build": "tsc && vite build",
     "test": "jest --watchAll",
-    "publish": "npm run build && npm publish"
+    "publish": "npm run build && npm publish",
+    "prepare": "husky"
   },
   "dependencies": {
     "@lit-protocol/encryption": "^7.0.4",
@@ -34,8 +35,8 @@
     "eth-crypto": "^2.7.0",
     "ethereum-cryptography": "^3.0.0",
     "ethers": "^6.13.5",
-    "mobx": "6.0.4",
-    "mobx-react": "^9.1.1",
+    "mobx": "6.9.0",
+    "mobx-react": "9.1.1",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -45,12 +46,18 @@
     "@types/jest": "^29.5.12",
     "@types/node": "^22.2.0",
     "@types/react": "~18.2.45",
+    "husky": "^9.1.7",
     "jest": "^29.2.1",
+    "lint-staged": "^15.4.3",
+    "prettier": "3.5.2",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4",
     "vite": "^5.4.0",
     "vite-plugin-dts": "^4.0.2"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   },
   "private": false
 }

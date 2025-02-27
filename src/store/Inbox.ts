@@ -2,46 +2,49 @@ import { Core } from "../Core";
 import PDFSNode from "./PDFSNode";
 
 export default class Inbox extends PDFSNode {
-  public static _nodeType = "N_Inbox"
+  public static _nodeType = "N_Inbox";
 
   constructor(
-    core : Core,
+    core: Core,
     treePath: string[],
     _: string | undefined,
     hash?: string,
-  ){
-    super(core, treePath, "N_Inbox", hash )
+  ) {
+    super(core, treePath, "N_Inbox", hash);
   }
 
-  public async addMessage(sender: string, message: string){
-
-    const newMessages = [ ...this._rawNode.unread_messages]
+  public async addMessage(sender: string, message: string) {
+    const newMessages = [...this._rawNode.unread_messages];
     newMessages.push({
       message: message,
       sentOn: new Date().toISOString(),
-      sender: sender
-    })
+      sender: sender,
+    });
 
     try {
-      await this.update({
-        ...this._rawNode,
-        "unread_messages": newMessages 
-      }, true)
+      await this.update(
+        {
+          ...this._rawNode,
+          unread_messages: newMessages,
+        },
+        true,
+      );
     } catch (e) {
-      console.log("error: ", e)
+      console.log("error: ", e);
     }
   }
 
-  public async clearMessages(){
+  public async clearMessages() {
     try {
-      await this.update({
-        ...this._rawNode,
-        "unread_messages": [] 
-      }, true)
+      await this.update(
+        {
+          ...this._rawNode,
+          unread_messages: [],
+        },
+        true,
+      );
     } catch (e) {
-      console.log("error: ", JSON.stringify(e))
+      console.log("error: ", JSON.stringify(e));
     }
   }
-
 }
-

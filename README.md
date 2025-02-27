@@ -41,6 +41,7 @@ The Auth module provides robust authentication, supporting multiple authenticati
 - **Private Key Authentication**: Initialize by passing in a private key
 
 The authentication process includes:
+
 1. User authentication verification
 2. On-chain verification of user status
 3. Access to PDOS root hash and compute node information
@@ -87,10 +88,12 @@ The Storage module provides a flexible storage solution for persistent data:
 
 ```typescript
 // Store data
-await pdos().storage.addItem('user_preferences', JSON.stringify(preferences));
+await pdos().storage.addItem("user_preferences", JSON.stringify(preferences));
 
 // Retrieve data
-const preferences = JSON.parse(await pdos().storage.getItem('user_preferences'));
+const preferences = JSON.parse(
+  await pdos().storage.getItem("user_preferences"),
+);
 ```
 
 ### AppManager
@@ -118,7 +121,7 @@ The Notification module manages user notifications across platforms:
 ```typescript
 // Add a notification listener
 await pdos().notification.addListener((notification) => {
-  console.log('New notification received:', notification);
+  console.log("New notification received:", notification);
 });
 ```
 
@@ -133,10 +136,10 @@ The DataRequest module provides access to health data from various sources:
 
 ```typescript
 // Check access to health metrics
-await pdos().dataRequest.checkAccess(['step_count', 'heart_rate']);
+await pdos().dataRequest.checkAccess(["step_count", "heart_rate"]);
 
 // Get today's health data
-const todaysSteps = await pdos().dataRequest.getTodaysValue('step_count');
+const todaysSteps = await pdos().dataRequest.getTodaysValue("step_count");
 ```
 
 ## Actions
@@ -189,13 +192,13 @@ Treatments actions handle operations related to medical treatments:
 const treatments = actions.treatments.getActiveTreatments();
 
 // Add a new treatment
-await actions.treatments.addTreatment('Medication A', 'med-hash-123', {
-  dosage: '10mg',
-  frequency: 'twice daily'
+await actions.treatments.addTreatment("Medication A", "med-hash-123", {
+  dosage: "10mg",
+  frequency: "twice daily",
 });
 
 // Get instances of a treatment
-const instances = actions.treatments.getTreatmentInstances('Medication A');
+const instances = actions.treatments.getTreatmentInstances("Medication A");
 ```
 
 ## Core
@@ -209,32 +212,32 @@ The Core is initialized with a configuration object that defines its behavior:
 ```typescript
 new Core({
   // Environment setting - currently only 'marigold' is supported
-  env: 'marigold',
-  
+  env: "marigold",
+
   // Context for the PDOS instance
   context: {
     // Gateway URL for API communication
-    gatewayURL: 'https://your-gateway-url.com',
+    gatewayURL: "https://your-gateway-url.com",
     // Whether this instance is running as a compute node
-    isComputeNode: false
+    isComputeNode: false,
   },
-  
+
   // Optional test configuration
   test: {
-    initCredentialId: 'test-credential-id'
+    initCredentialId: "test-credential-id",
   },
-  
+
   // Module configuration
   modules: {
     auth: {},
     encryption: {
-      enabled: true
+      enabled: true,
     },
     storage: {},
     appManager: {},
     notification: {},
-    dataRequest: {}
-  }
+    dataRequest: {},
+  },
 });
 ```
 
@@ -249,12 +252,12 @@ await pdos().start();
 // Start PDOS with dependency injection for specific modules
 await pdos().start({
   storage: {
-    storageLib: customStorageImplementation
+    storageLib: customStorageImplementation,
   },
   notification: {
     Notifications: customNotificationSystem,
-    Permissions: customPermissionsSystem
-  }
+    Permissions: customPermissionsSystem,
+  },
 });
 ```
 
@@ -272,7 +275,7 @@ During initialization, the Core:
 The singleton pattern allows easy access to Core services:
 
 ```typescript
-import pdos from '@alpinehealthcare/pdos';
+import pdos from "@alpinehealthcare/pdos";
 
 // Access modules
 const authModule = pdos().modules?.auth;
@@ -337,7 +340,7 @@ Store classes like `UserAccount`, `TreatmentManifest`, etc. register their child
 // Example from UserAccount.ts constructor
 constructor(core: Core) {
   super(core, [], "N_UserAccount")
-  
+
   // Register child node types in the NetworkMapper
   addNodeToNetworkMapper("TreatmentManifest", TreatmentManifest)
   addNodeToNetworkMapper("DataManifest", DataManifest)
@@ -368,7 +371,7 @@ public get node() {
       this._rawNode = await getFromPdfs(this._hash)
       // Process node data, decrypt if needed
       // ...
-      
+
       // Set node properties based on loaded data
       this._nodeType = this._rawNode.type
       this._treePathInclusive = [...this._treePath, this._hash]
@@ -376,7 +379,7 @@ public get node() {
       // Create a new node if no hash exists
       // ...
     }
-    
+
     // Process loaded node
     this.onNodeLoad()
   })()
@@ -395,11 +398,11 @@ public async syncLocalRootHash(addressToUpdate?: string) {
   if (this.core.modules.auth?.authType === AuthType.WALLET) {
     // Get the current on-chain root hash
     const hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate)
-    
+
     // If local hash differs from on-chain hash, update it
     if (this._hash !== hashId) {
       await this.core.modules.auth.updatePDOSRoot(
-        this._hash, 
+        this._hash,
         addressToUpdate ?? this.core.modules.auth.publicKey
       )
       console.log("# pdos : synced new root - " + this._hash)
@@ -410,19 +413,18 @@ public async syncLocalRootHash(addressToUpdate?: string) {
 
 This synchronization happens automatically after update operations.
 
-
 ## Usage
 
 ```typescript
-import pdos, { Core } from '@alpinehealthcare/pdos';
-import { actions } from '@alpinehealthcare/pdos';
+import pdos, { Core } from "@alpinehealthcare/pdos";
+import { actions } from "@alpinehealthcare/pdos";
 
 // Initialize PDOS
 new Core({
-  env: 'marigold',
+  env: "marigold",
   context: {
-    gatewayURL: 'https://your-gateway-url.com'
-  }
+    gatewayURL: "https://your-gateway-url.com",
+  },
 });
 
 // Start PDOS

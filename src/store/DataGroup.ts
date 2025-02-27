@@ -2,33 +2,33 @@ import { Core } from "../Core";
 import PDFSNode from "./PDFSNode";
 
 export default class DataGroup extends PDFSNode {
-  public static _nodeType = "N_DataGroup_I"
+  public static _nodeType = "N_DataGroup_I";
 
   constructor(
-    core : Core,
+    core: Core,
     treePath: string[],
     instanceType: string | undefined,
     hash?: string,
-  ){
-    super(core, treePath, "N_DataGroup_" + instanceType, hash )
+  ) {
+    super(core, treePath, "N_DataGroup_" + instanceType, hash);
   }
 
   public async updateData() {
-    const updateValue = await this.core?.modules?.dataRequest?.getTodaysValue(this._rawNode.data.metric)
+    const updateValue = await this.core?.modules?.dataRequest?.getTodaysValue(
+      this._rawNode.data.metric,
+    );
 
     if (!updateValue) {
-      return
+      return;
     }
 
     if (updateValue !== undefined) {
-      const records = this._rawNode.data.records
-      records[new Date().getTime()] = updateValue
+      const records = this._rawNode.data.records;
+      records[new Date().getTime()] = updateValue;
       await this.update({
         ...this._rawNode.data,
-        records
-      })
+        records,
+      });
     }
   }
-
 }
-

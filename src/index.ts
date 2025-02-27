@@ -1,7 +1,12 @@
 import pdos, { Core } from "./Core";
 import { getAllRecords, sync } from "./actions/Data";
 import { clearMessages, getMessages } from "./actions/Inbox";
-import { addTreatment, getActiveTreatments, getTreatmentBinaryForTreatment, getTreatmentInstances } from "./actions/Treatments";
+import {
+  addTreatment,
+  getActiveTreatments,
+  getTreatmentBinaryForTreatment,
+  getTreatmentInstances,
+} from "./actions/Treatments";
 import PDFSNode from "./store/PDFSNode";
 
 export const actions = {
@@ -13,13 +18,12 @@ export const actions = {
     getActiveTreatments,
     getTreatmentInstances,
     getTreatmentBinaryForTreatment,
-    addTreatment
+    addTreatment,
   },
   data: {
     sync,
-    getAllRecords
-  }
+    getAllRecords,
+  },
 };
 
-
-export { Core, PDFSNode, pdos};
+export { Core, PDFSNode, pdos };

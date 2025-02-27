@@ -5,11 +5,11 @@ import DataRequest from "./dataRequest/DataRequest";
 import Encryption from "./encryption/Encryption";
 import Storage from "./storage/Storage";
 
-export default { 
-  appManager : AppManager,
-  auth : Auth,
+export default {
+  appManager: AppManager,
+  auth: Auth,
   dataRequest: DataRequest,
   encryption: Encryption,
-  notification : Notification,
-  storage: Storage
-}
+  notification: Notification,
+  storage: Storage,
+};

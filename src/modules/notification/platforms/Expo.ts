@@ -3,28 +3,34 @@ import { Core } from "../../../Core";
 import { NotificationConfig } from "../Notification";
 
 export interface ExpoDependencies {
-  Notifications : any,
-  Permissions : any,
-  Platform : any
+  Notifications: any;
+  Permissions: any;
+  Platform: any;
 }
 
 export default class ExpoNotification extends NotificationClass {
-  protected hasPermission : boolean = false;
-  protected listeners : ((data: any) => void)[] = [];
+  protected hasPermission: boolean = false;
+  protected listeners: ((data: any) => void)[] = [];
 
-  private Notifications : any;
-  private Permissions : any;
-  private Platform : any;
+  private Notifications: any;
+  private Permissions: any;
+  private Platform: any;
 
-  constructor(private core : Core, private config : NotificationConfig, expoDependencies : ExpoDependencies) {
+  constructor(
+    private core: Core,
+    private config: NotificationConfig,
+    expoDependencies: ExpoDependencies,
+  ) {
     super();
     this.Notifications = expoDependencies.Notifications;
     this.Permissions = expoDependencies.Permissions;
     this.Platform = expoDependencies.Platform;
   }
 
-  protected async checkPermission(){
-    const { status  } = await this.Permissions.getAsync(this.Permissions.NOTIFICATIONS);
+  protected async checkPermission() {
+    const { status } = await this.Permissions.getAsync(
+      this.Permissions.NOTIFICATIONS,
+    );
     if (status === "granted") {
       this.hasPermission = true;
       this.createChannels();
@@ -36,23 +42,25 @@ export default class ExpoNotification extends NotificationClass {
   }
 
   private async createChannels() {
-    if (this.Platform.OS === 'android') {
-      this.Notifications.createChannelAndroidAsync('default', {
-        name: 'default',
+    if (this.Platform.OS === "android") {
+      this.Notifications.createChannelAndroidAsync("default", {
+        name: "default",
         sound: true,
-        priority: 'max',
+        priority: "max",
         vibrate: [0, 250, 250, 250],
       });
     }
   }
 
-  protected async requestPermission(){
-    const { status } = await this.Permissions.askAsync(this.Permissions.NOTIFICATIONS);
+  protected async requestPermission() {
+    const { status } = await this.Permissions.askAsync(
+      this.Permissions.NOTIFICATIONS,
+    );
 
     if (status === "granted") {
       this.hasPermission = true;
       this.createChannels();
-      this.updateToken()
+      this.updateToken();
       return;
     } else {
     }
@@ -65,16 +73,12 @@ export default class ExpoNotification extends NotificationClass {
     }
   }
 
-  protected async updateToken() {
-  }
+  protected async updateToken() {}
 
-  public addEventListener(cb : (data: any) => void) {
+  public addEventListener(cb: (data: any) => void) {
     //TODO : Handle unsubscription of listern callback
     this.Notifications.addEventListener(cb);
   }
 
-  protected newNotification(){
-
-  }
-
+  protected newNotification() {}
 }
