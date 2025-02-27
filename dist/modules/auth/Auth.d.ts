@@ -1,6 +1,7 @@
 import { default as Module } from '../Module';
 import { Core } from '../..';
 import { ethers } from 'ethers';
+import { EIP1193Provider } from 'viem';
 export declare enum AuthType {
     WALLET = 0,
     PASSKEY = 1
@@ -72,7 +73,7 @@ export default class Auth extends Module {
     constructor(core: Core, config: Config);
     setPublicKey(publicKey: string): void;
     initializeWalletUserWithPrivateKey(): Promise<void>;
-    initializeWalletUser(eip1193Provider?: ethers.Eip1193Provider): Promise<void>;
+    initializeWalletUser(eip1193Provider?: EIP1193Provider): Promise<void>;
     disconnectWalletUser(): Promise<void>;
     /** Wallet Support */
     initInfoForWalletUser(): Promise<void>;

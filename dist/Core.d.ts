@@ -12,7 +12,7 @@ interface Context {
     isComputeNode?: boolean;
 }
 interface CoreConfig {
-    env: 'marigold';
+    env: "marigold";
     context: Context;
     test?: TestConfiguration;
     modules?: any;

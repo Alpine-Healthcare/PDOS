@@ -174,6 +174,7 @@ export default class Encryption extends Module {
       await this.core.modules.storage?.getItem(PDOS_ACCESS_PACKAGE);
 
     if (savedAccessPackage) {
+      console.log("saved access package", savedAccessPackage);
       this.accessPackage = JSON.parse(savedAccessPackage);
       return;
     }

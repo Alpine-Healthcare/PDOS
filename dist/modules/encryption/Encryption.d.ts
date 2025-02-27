@@ -10,7 +10,7 @@ export interface AccessPackageEncrypted {
 }
 interface EncryptionConfig {
     enabled?: boolean;
-    portal?: 'owner' | 'remote';
+    portal?: "owner" | "remote";
 }
 export default class Encryption extends Module {
     private config;

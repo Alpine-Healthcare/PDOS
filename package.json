@@ -24,7 +24,7 @@
     "watch": "tsc -w",
     "build": "tsc && vite build",
     "test": "jest --watchAll",
-    "publish": "npm run build && npm publish",
+    "release": "npm run build && npm publish",
     "prepare": "husky"
   },
   "dependencies": {
@@ -38,7 +38,8 @@
     "mobx": "6.9.0",
     "mobx-react": "9.1.1",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "viem": "^2.23.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

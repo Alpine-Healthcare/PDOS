@@ -13,7 +13,7 @@ export default class DataRequest extends Module {
     private MetricMap;
     constructor(core: Core, config: Config, dependencyInjection: DependencyInjection);
     protected start(): Promise<void>;
-    checkAccess(metrics: (any)[]): Promise<void>;
+    checkAccess(metrics: any[]): Promise<void>;
     getTodaysValue(metric: string): Promise<number | undefined>;
 }
 export {};

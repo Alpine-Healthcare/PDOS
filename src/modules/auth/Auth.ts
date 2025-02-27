@@ -3,6 +3,7 @@ import { Core } from "../..";
 import { ethers } from "ethers";
 import { makeObservable, observable } from "mobx";
 import { getFromPdfs } from "../../store/Pdfs";
+import { EIP1193Provider } from "viem";
 
 export enum AuthType {
   WALLET,
@@ -148,7 +149,7 @@ export default class Auth extends Module {
   public publicKey: string | undefined;
 
   private ethersProvider: ethers.BrowserProvider | undefined;
-  private eip1193Provider: any;
+  private eip1193Provider: EIP1193Provider | undefined;
   private wallet: ethers.Wallet | undefined;
 
   constructor(
@@ -167,7 +168,6 @@ export default class Auth extends Module {
   }
 
   public setPublicKey(publicKey: string) {
-    console.log("setting public key", publicKey);
     this.publicKey = publicKey;
   }
 
@@ -185,7 +185,9 @@ export default class Auth extends Module {
     await this.initInfoForWalletUser();
   }
 
-  public async initializeWalletUser(eip1193Provider?: ethers.Eip1193Provider) {
+  public async initializeWalletUser(eip1193Provider?: EIP1193Provider) {
+    this.authType = AuthType.WALLET;
+
     if (this.initStarted) {
       return;
     }
@@ -194,14 +196,6 @@ export default class Auth extends Module {
     if (eip1193Provider) {
       this.eip1193Provider = eip1193Provider;
       this.ethersProvider = new ethers.BrowserProvider(eip1193Provider);
-    }
-    this.authType = AuthType.WALLET;
-    let addresses: string[] = [];
-    addresses = await this.eip1193Provider.request({
-      method: "eth_requestAccounts",
-    });
-    if (addresses.length > 0) {
-      this.publicKey = addresses[0];
       this.publicKey = (await this.getSigner()).address;
       await this.initInfoForWalletUser();
     }
@@ -221,6 +215,7 @@ export default class Auth extends Module {
   /** Wallet Support */
 
   public async initInfoForWalletUser() {
+    console.log("setting up wallet");
     this.authType = AuthType.WALLET;
 
     try {
@@ -229,6 +224,8 @@ export default class Auth extends Module {
     } catch (e) {
       this.info.isActive = false;
     }
+
+    console.log("info", this.info);
 
     let generatedAccessPackageEncrypted = undefined;
     const isNewUser = !this.info.pdosRoot;
@@ -254,10 +251,6 @@ export default class Auth extends Module {
         this.initStep = InitSteps.GENERATING_ENCRYPTION_KEYS;
         generatedAccessPackageEncrypted =
           await this.core.modules.encryption?.generateAccessPackage();
-        console.log(
-          "generatedAccessPackageEncrypted",
-          generatedAccessPackageEncrypted,
-        );
       } catch (e) {
         throw new Error("Failed onboarding user");
       }
@@ -283,6 +276,7 @@ export default class Auth extends Module {
       const accessPackage = await this.getAccessPackageFromRoot(
         this.info.pdosRoot,
       );
+      console.log("got accessPackage: ", accessPackage);
       await this.core.modules.encryption?.setAccessPackage(accessPackage);
       await this.core.tree.root.init(this.info.pdosRoot);
       await this.core.tree.root.syncLocalRootHash();
