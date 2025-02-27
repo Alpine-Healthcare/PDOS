@@ -23,8 +23,7 @@ PDOS (Patient Data Operating System) is a library that provides a secure framewo
 
 ## Networks
 
-#### Marigold Testnet 
-The primary test environment for Alpine development and integration testing. It provides a complete replica of the production environment.
+##### 🏵️ Marigold - Testnet - Live ✅
 
 ## Features
 
