@@ -21,6 +21,11 @@ A cross-platform library for managing and interacting with patient health data w
 
 PDOS (Patient Data Operating System) is a library that provides a secure framework for handling patient health data. It includes features for managing treatments, messages, and synchronizing health records while maintaining privacy and security.
 
+## Networks
+
+### Marigold Testnet
+The primary test environment for Alpine development and integration testing. It provides a complete replica of the production environment.
+
 ## Features
 
 - **Data Management**: Secure handling of patient health records
