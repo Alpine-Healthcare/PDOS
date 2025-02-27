@@ -1,4 +1,3 @@
-```
 .----------------------------------------------------------------------------------.
 |__/\\\\\\\\\\\\\____/\\\\\\\\\\\\__________/\\\\\__________/\\\\\\\\\\\___        |
 | _\/\\\/////////\\\_\/\\\////////\\\______/\\\///\\\______/\\\/////////\\\_       |
@@ -275,8 +274,8 @@ The singleton pattern allows easy access to Core services:
 import pdos from '@alpinehealthcare/pdos';
 
 // Access modules
-const authModule = pdos().auth;
-const encryptionModule = pdos().encryption;
+const authModule = pdos().modules?.auth;
+const encryptionModule = pdos().modules?.encryption;
 
 // Access stores
 const userAccount = pdos().stores.userAccount;
@@ -324,20 +323,107 @@ The PDOS Merkle tree provides:
 - **Efficient Updates**: Only changed parts of the tree need to be updated
 - **Hierarchical Data Organization**: Logical organization of patient data
 - **Tree Path Navigation**: Easy navigation through the tree structure
+- **Automatic Tree Construction**: The tree builds itself automatically when provided with a root hash
+- **Root Hash Synchronization**: Change propagation throughout the tree with automatic blockchain sync
+
+#### Core Concepts
+
+##### NetworkMapper and Child Node Registration
+
+Store classes like `UserAccount`, `TreatmentManifest`, etc. register their child node types in the `NetworkMapper` during their constructor initialization. This registration is crucial for the automatic tree building process:
 
 ```typescript
-// Creating a tree node
-const nodeInstance = new PDOSNode(core, treePath, nodeType);
-
-// Getting node data
-const nodeData = nodeInstance.getData();
-
-// Adding a child node
-await nodeInstance.addChild(ChildNodeClass, "instanceName", nodeData);
-
-// Refreshing the tree
-await nodeInstance.refreshTree(previousTreePath);
+// Example from UserAccount.ts constructor
+constructor(core: Core) {
+  super(core, [], "N_UserAccount")
+  
+  // Register child node types in the NetworkMapper
+  addNodeToNetworkMapper("TreatmentManifest", TreatmentManifest)
+  addNodeToNetworkMapper("DataManifest", DataManifest)
+  addNodeToNetworkMapper("Inbox", Inbox)
+}
 ```
+
+The `NetworkMapper` maintains a registry of node types to their corresponding classes, enabling nodes to construct child instances of the correct type when traversing the tree.
+
+##### Automatic Tree Building
+
+When initializing the PDOS system with a root hash, the tree automatically builds itself by:
+
+1. Loading the root node data using the provided hash
+2. Detecting child nodes from the edge information in the node data
+3. Creating instances of the appropriate node classes (using the NetworkMapper registry)
+4. Recursively loading child nodes and their children
+
+```typescript
+// Initializing with a root hash
+await userAccount.init(rootHash);
+
+// Under the hood, the node getter loads data and builds the tree
+public get node() {
+  return (async () => {
+    if (this._hash) {
+      // Load existing node data from storage
+      this._rawNode = await getFromPdfs(this._hash)
+      // Process node data, decrypt if needed
+      // ...
+      
+      // Set node properties based on loaded data
+      this._nodeType = this._rawNode.type
+      this._treePathInclusive = [...this._treePath, this._hash]
+    } else {
+      // Create a new node if no hash exists
+      // ...
+    }
+    
+    // Process loaded node
+    this.onNodeLoad()
+  })()
+}
+```
+
+##### Root PDOS Hash and Blockchain Synchronization
+
+The root hash of the PDOS Merkle tree represents the state of the entire patient data structure. This hash is stored on-chain to provide a tamper-proof reference point for the data.
+
+The `syncLocalRootHash` method synchronizes the local root hash with the blockchain when changes are made:
+
+```typescript
+// Synchronizing the local root hash with the blockchain
+public async syncLocalRootHash(addressToUpdate?: string) {
+  if (this.core.modules.auth?.authType === AuthType.WALLET) {
+    // Get the current on-chain root hash
+    const hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate)
+    
+    // If local hash differs from on-chain hash, update it
+    if (this._hash !== hashId) {
+      await this.core.modules.auth.updatePDOSRoot(
+        this._hash, 
+        addressToUpdate ?? this.core.modules.auth.publicKey
+      )
+      console.log("# pdos : synced new root - " + this._hash)
+    }
+  }
+}
+```
+
+This synchronization happens automatically after update operations:
+
+```typescript
+// Example from PDFSNode.update method
+protected async update(rawNodeUpdate: any, unencrypted: boolean = false) {
+  // Process updates and encrypt if needed
+  // ...
+  
+  // Update the node and refresh the tree
+  this._hash=""
+  const previousTreePath = [...this._treePathInclusive.slice(0,-1)]
+  await this.node
+  await this.refreshTree(previousTreePath)
+  
+  // Sync the root hash with the blockchain
+  await this.core.tree.root.syncLocalRootHash()
+}
 
 ## Installation
 
