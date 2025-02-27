@@ -481,11 +481,12 @@ PDOS is built on a modular architecture with the following components:
 
 1. Clone the repository
 2. Install dependencies:
-   ```bash
-   yarn install
-   # or
-   npm install
-   ```
+
+```bash
+yarn install
+# or
+npm install
+```
 
 ### Build
 
@@ -502,7 +503,3 @@ yarn test
 # or
 npm test
 ```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
