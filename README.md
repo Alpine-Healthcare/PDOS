@@ -31,9 +31,9 @@ PDOS (Patient Data Operating System) is a library that provides a secure framewo
 
 ## Modules
 
-PDOS is built on a modular architecture with the following key modules:
+PDOS is built on a modular architecture and includes the following:
 
-### Auth Module
+### Auth
 
 The Auth module provides robust authentication, supporting multiple authentication methods:
 
@@ -57,7 +57,7 @@ const isActive = await pdos().auth.checkIsActive();
 const rootHash = await pdos().auth.getPDOSRoot();
 ```
 
-### Encryption Module
+### Encryption
 
 The Encryption module provides end-to-end encryption for patient data using a combination of symmetric and asymmetric cryptography:
 
@@ -77,7 +77,7 @@ const encryptedData = await pdos().encryption.encryptNode(data);
 const decryptedData = await pdos().encryption.decryptNode(encryptedData);
 ```
 
-### Storage Module
+### Storage
 
 The Storage module provides a flexible storage solution for persistent data:
 
@@ -93,7 +93,7 @@ await pdos().storage.addItem('user_preferences', JSON.stringify(preferences));
 const preferences = JSON.parse(await pdos().storage.getItem('user_preferences'));
 ```
 
-### AppManager Module
+### AppManager
 
 The AppManager module handles application lifecycle management:
 
@@ -106,7 +106,7 @@ The AppManager module handles application lifecycle management:
 // Lifecycle events are handled internally
 ```
 
-### Notification Module
+### Notification
 
 The Notification module manages user notifications across platforms:
 
@@ -122,7 +122,7 @@ await pdos().notification.addListener((notification) => {
 });
 ```
 
-### DataRequest Module
+### DataRequest
 
 The DataRequest module provides access to health data from various sources:
 
