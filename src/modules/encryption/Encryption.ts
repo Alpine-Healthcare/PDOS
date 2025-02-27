@@ -52,23 +52,23 @@ const accessCondition = (address: string) => [
 ];
 
 const capacityDelegationAuthSig = {
-  sig: "0xa538c495ba070b8aa0a360f420b8e530d7778f19a6f51e816133e0b17c4519df31fbf170c6b0c6fa0c6329b2698296da324260caa0eaa6075ad4e9eb1b825d661b",
+  sig: "0x38cfac37c1c6fea0ceb56a5c939255f6781c5970ce6e1c64071329021c9daf3a67056b6d0482d7d90c2fbc1ababca4dc96b021f4f663487d61d63dd4292747fa1b",
   derivedVia: "web3.eth.personal.sign",
   signedMessage:
     "localhost wants you to sign in with your Ethereum account:\n" +
-    "0xe4d172EE62f88Ba29D051D60620fEBB308B81F4E\n" +
+    "0x114a31a299d0fb30D1F15fD77fa8c96CdAE43A6D\n" +
     "\n" +
-    "This is a test statement.  You can put anything you want here. I further authorize the stated URI to perform the following actions on my behalf: (1) 'Auth': 'Auth' for 'lit-ratelimitincrease://120085'.\n" +
+    "This is a test statement.  You can put anything you want here. I further authorize the stated URI to perform the following actions on my behalf: (1) 'Auth': 'Auth' for 'lit-ratelimitincrease://128716'.\n" +
     "\n" +
     "URI: lit:capability:delegation\n" +
     "Version: 1\n" +
     "Chain ID: 1\n" +
-    "Nonce: 0x70c2a495bbe0b7705b363d589e74b519f2af71fd9e9769fc99303a648b23983d\n" +
-    "Issued At: 2025-02-15T15:56:32.444Z\n" +
-    "Expiration Time: 2025-02-22T14:36:32.441Z\n" +
+    "Nonce: 0x6838569f85ea77c476ffa536005bf959d4daef2851ccffc86035ba0316b93444\n" +
+    "Issued At: 2025-02-27T06:34:45.852Z\n" +
+    "Expiration Time: 2025-03-06T05:14:45.850Z\n" +
     "Resources:\n" +
-    "- urn:recap:eyJhdHQiOnsibGl0LXJhdGVsaW1pdGluY3JlYXNlOi8vMTIwMDg1Ijp7IkF1dGgvQXV0aCI6W3siZGVsZWdhdGVfdG8iOlsiQ2JjMTFFNTM0MDc3YTE4MTQ3NmM3YTVjNTExYTVmZmI0YzE3ZEI2NSJdLCJuZnRfaWQiOlsiMTIwMDg1Il0sInVzZXMiOiIxMDAwIn1dfX0sInByZiI6W119",
-  address: "0xe4d172EE62f88Ba29D051D60620fEBB308B81F4E",
+    "- urn:recap:eyJhdHQiOnsibGl0LXJhdGVsaW1pdGluY3JlYXNlOi8vMTI4NzE2Ijp7IkF1dGgvQXV0aCI6W3siZGVsZWdhdGVfdG8iOlsiNjMwOUJkODM2RmQ4RkQxMDM3NDJiZjNiODdBMDlhMWEwMTZlQTk1OSJdLCJuZnRfaWQiOlsiMTI4NzE2Il0sInVzZXMiOiIxMDAwIn1dfX0sInByZiI6W119",
+  address: "0x114a31a299d0fb30D1F15fD77fa8c96CdAE43A6D",
 };
 
 const PDOS_ACCESS_PACKAGE = "pdos-accessPackage";
@@ -280,31 +280,47 @@ export default class Encryption extends Module {
   }
 
   public async decryptWithLit(ciphertext: string, dataToEncryptHash: string) {
+    this.portalEmit?.("random", "getting session sigs", "");
     const sessionSigs = await this.getSessionSignatures();
+    this.portalEmit?.("random", "got session sigs", "");
     if (
       !this.core.modules.auth?.publicKey ||
       !this.litNodeClient ||
       !sessionSigs
     ) {
+      this.portalEmit?.(
+        "error",
+        "error",
+        "Missing publickey, litNodeClient, or sessionSigs",
+      );
       throw new Error("Missing publickey, litNodeClient, or sessionSigs");
     }
+    this.portalEmit?.("random", "cipherText", ciphertext);
+    this.portalEmit?.("random", "publckey", this.core.modules.auth.publicKey);
+    this.portalEmit?.("random", "dataToEncryptHash", dataToEncryptHash);
+    this.portalEmit?.("random", "sessionSigs", JSON.stringify(sessionSigs));
 
     // Decrypt the message
-    const decryptedString = await decryptToString(
-      {
-        evmContractConditions: accessCondition(
-          this.core.modules.auth?.publicKey,
-        ) as any,
-        chain: "baseSepolia",
-        ciphertext,
-        dataToEncryptHash,
-        sessionSigs,
-      },
-      this.litNodeClient,
-    );
+    try {
+      const decryptedString = await decryptToString(
+        {
+          evmContractConditions: accessCondition(
+            this.core.modules.auth?.publicKey,
+          ) as any,
+          chain: "baseSepolia",
+          ciphertext,
+          dataToEncryptHash,
+          sessionSigs,
+        },
+        this.litNodeClient,
+      );
+      return decryptedString;
+    } catch (error) {
+      this.portalEmit?.("random", "failed decryptring", JSON.stringify(error));
+      throw new Error("Failed to decrypt with Lit");
+    }
 
     // Return the decrypted string
-    return decryptedString;
   }
 
   public async getAuthSig(toSign: string) {
@@ -323,8 +339,19 @@ export default class Encryption extends Module {
 
   public async getSessionSignatures() {
     if (!this.litNodeClient || !this.core.modules.auth?.publicKey) {
+      this.portalEmit?.(
+        "random",
+        "error",
+        this.core.modules.auth?.publicKey ?? "missing publickey",
+      );
       throw new Error("Missing litNodeClient, publickey, or signer");
     }
+
+    this.portalEmit?.(
+      "random",
+      "getting latest blockhash",
+      this.core.modules.auth?.publicKey,
+    );
 
     // Get the latest blockhash
     const latestBlockhash = await this.litNodeClient.getLatestBlockhash();
@@ -345,6 +372,8 @@ export default class Encryption extends Module {
       if (!this.core.modules.auth?.publicKey) {
         throw new Error("publicKey is required");
       }
+
+      this.portalEmit?.("random", "params", JSON.stringify(params.uri));
 
       // Create the SIWE message
       const toSign = await createSiweMessageWithRecaps({
@@ -375,7 +404,7 @@ export default class Encryption extends Module {
       // Get the session signatures
       const sessionSigs = await this.litNodeClient.getSessionSigs({
         expiration: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-        chain: "ethereum",
+        chain: "baseSepolia",
         resourceAbilityRequests: [
           {
             resource: litResource,
