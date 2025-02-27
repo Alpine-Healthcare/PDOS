@@ -207,7 +207,7 @@ The PDOS Core is the central management system that coordinates all components o
 The Core is initialized with a configuration object that defines its behavior:
 
 ```typescript
-const core = new Core({
+new Core({
   // Environment setting - currently only 'marigold' is supported
   env: 'marigold',
   
@@ -244,10 +244,10 @@ After configuring the Core, you need to start it to initialize all modules and s
 
 ```typescript
 // Start PDOS with default configuration
-await core.start();
+await pdos().start();
 
 // Start PDOS with dependency injection for specific modules
-await core.start({
+await pdos().start({
   storage: {
     storageLib: customStorageImplementation
   },
@@ -279,10 +279,10 @@ const authModule = pdos().modules?.auth;
 const encryptionModule = pdos().modules?.encryption;
 
 // Access stores
-const userAccount = pdos().stores.userAccount;
+const userAccount = pdos().stores?.userAccount;
 
 // Access the Merkle tree
-const rootNode = pdos().tree.root;
+const rootNode = pdos().tree?.root;
 ```
 
 ### Reset and Lifecycle Management
@@ -408,31 +408,8 @@ public async syncLocalRootHash(addressToUpdate?: string) {
 }
 ```
 
-This synchronization happens automatically after update operations:
+This synchronization happens automatically after update operations.
 
-```typescript
-// Example from PDFSNode.update method
-protected async update(rawNodeUpdate: any, unencrypted: boolean = false) {
-  // Process updates and encrypt if needed
-  // ...
-  
-  // Update the node and refresh the tree
-  this._hash=""
-  const previousTreePath = [...this._treePathInclusive.slice(0,-1)]
-  await this.node
-  await this.refreshTree(previousTreePath)
-  
-  // Sync the root hash with the blockchain
-  await this.core.tree.root.syncLocalRootHash()
-}
-
-## Installation
-
-```bash
-npm install @alpinehealthcare/pdos
-# or
-yarn add @alpinehealthcare/pdos
-```
 
 ## Usage
 
@@ -441,7 +418,7 @@ import pdos, { Core } from '@alpinehealthcare/pdos';
 import { actions } from '@alpinehealthcare/pdos';
 
 // Initialize PDOS
-const core = new Core({
+new Core({
   env: 'marigold',
   context: {
     gatewayURL: 'https://your-gateway-url.com'
@@ -449,7 +426,7 @@ const core = new Core({
 });
 
 // Start PDOS
-await core.start();
+await pdos().start();
 
 // Access treatment data
 const activeTreatments = await actions.treatments.getActiveTreatments();
