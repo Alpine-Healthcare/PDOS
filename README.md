@@ -73,13 +73,13 @@ const encryptedData = await pdos().encryption.encryptNode(data);
 const decryptedData = await pdos().encryption.decryptNode(encryptedData);
 ```
 
-## PDFS (Patient Data File System) and Merkle Tree
+## PDOS Merkle Tree
 
 PDOS implements a specialized file system for patient data using a Merkle tree structure:
 
-### PDFSNode
+### PDOSNode
 
-The `PDFSNode` class is the foundation of the PDFS Merkle tree, representing nodes in the tree:
+The `PDOSNode` class is the foundation of the PDOS Merkle tree, representing nodes in the tree:
 
 - **Node Types**: Different node types represent different data structures
 - **Tree Path Tracking**: Each node maintains its path in the tree
@@ -88,7 +88,7 @@ The `PDFSNode` class is the foundation of the PDFS Merkle tree, representing nod
 
 ### Merkle Tree Implementation
 
-The PDFS Merkle tree provides:
+The PDOS Merkle tree provides:
 
 - **Verifiable Data Integrity**: Cryptographic proof of data integrity
 - **Efficient Updates**: Only changed parts of the tree need to be updated
@@ -97,7 +97,7 @@ The PDFS Merkle tree provides:
 
 ```typescript
 // Creating a tree node
-const nodeInstance = new PDFSNode(core, treePath, nodeType);
+const nodeInstance = new PDOSNode(core, treePath, nodeType);
 
 // Getting node data
 const nodeData = nodeInstance.getData();
