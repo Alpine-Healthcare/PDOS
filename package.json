@@ -2,7 +2,7 @@
   "name": "@alpinehealthcare/pdos",
   "version": "0.0.63",
   "author": "Sanat Shah",
-  "repository": "https://github.com/alpinehealthcare/pdos",
+  "repository": "https://github.com/alpinehealthcare/PDOS",
   "license": "MIT",
   "outputPath": "dist",
   "type": "module",
