@@ -23,7 +23,7 @@ PDOS (Patient Data Operating System) is a library that provides a secure framewo
 
 ## Networks
 
-##### 🏵️ Marigold - Testnet - Live ✅
+##### 🏵️ Marigold - Testnet - Down 🟡
 
 ## Features
 
