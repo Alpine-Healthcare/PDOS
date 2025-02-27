@@ -38,13 +38,13 @@ PDOS is built on a modular architecture with the following key modules:
 The Auth module provides robust authentication, supporting multiple authentication methods:
 
 - **Wallet Authentication**: Connect using Web3 wallets via EIP-1193 providers
-- **Passkey Authentication**: Support for modern passkey authentication mechanisms
+- **Private Key Authentication**: Initialize by passing in a private key
 
 The authentication process includes:
 1. User authentication verification
 2. On-chain verification of user status
 3. Access to PDOS root hash and compute node information
-4. Integration with the Alpine Healthcare smart contract
+4. Integration with the Alpine Healthcare smart contracts
 
 ```typescript
 // Initialize with wallet authentication
