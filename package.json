@@ -1,6 +1,8 @@
 {
   "name": "@alpinehealthcare/pdos",
   "version": "0.0.62",
+  "author": "Sanat Shah",
+  "repository": "https://github.com/alpinehealthcare/pdos",
   "license": "MIT",
   "outputPath": "dist",
   "type": "module",
@@ -21,7 +23,8 @@
   "scripts": {
     "watch": "tsc -w",
     "build": "tsc && vite build",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "publish": "npm run build && npm publish"
   },
   "dependencies": {
     "@lit-protocol/encryption": "^7.0.4",

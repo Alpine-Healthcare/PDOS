@@ -1,4 +1,3 @@
-```
 .----------------------------------------------------------------------------------.
 |__/\\\\\\\\\\\\\____/\\\\\\\\\\\\__________/\\\\\__________/\\\\\\\\\\\___        |
 | _\/\\\/////////\\\_\/\\\////////\\\______/\\\///\\\______/\\\/////////\\\_       |
@@ -15,11 +14,11 @@
 [![NPM Version](https://img.shields.io/npm/v/@alpinehealthcare/pdos)](https://www.npmjs.com/package/@alpinehealthcare/pdos)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A core library for managing patient health data with privacy, security, and interoperability at its center.
+A cross-platform library for managing and interacting with patient health data with privacy, security, and interoperability at its core.
 
 ## Overview
 
-PDOS (Patient Data Operating System) is a TypeScript library that provides a secure framework for handling patient health data. It includes features for managing treatments, messages, and synchronizing health records while maintaining privacy and security.
+PDOS (Patient Data Operating System) is a library that provides a secure framework for handling patient health data. It includes features for managing treatments, messages, and synchronizing health records while maintaining privacy and security.
 
 ## Features
 
@@ -29,9 +28,13 @@ PDOS (Patient Data Operating System) is a TypeScript library that provides a sec
 - **Privacy-First Architecture**: Built with patient data privacy as a core principle
 - **Modular Design**: Extensible architecture through a module system
 
-## Authentication
+## Modules
 
-PDOS provides robust authentication through its Auth module, supporting multiple authentication methods:
+PDOS is built on a modular architecture with the following key modules:
+
+### Auth Module
+
+The Auth module provides robust authentication, supporting multiple authentication methods:
 
 - **Wallet Authentication**: Connect using Web3 wallets via EIP-1193 providers
 - **Passkey Authentication**: Support for modern passkey authentication mechanisms
@@ -53,7 +56,7 @@ const isActive = await pdos().auth.checkIsActive();
 const rootHash = await pdos().auth.getPDOSRoot();
 ```
 
-## Encryption
+### Encryption Module
 
 The Encryption module provides end-to-end encryption for patient data using a combination of symmetric and asymmetric cryptography:
 
@@ -72,6 +75,232 @@ const encryptedData = await pdos().encryption.encryptNode(data);
 // Decrypt data
 const decryptedData = await pdos().encryption.decryptNode(encryptedData);
 ```
+
+### Storage Module
+
+The Storage module provides a flexible storage solution for persistent data:
+
+- **Cross-Platform Compatibility**: Works across web and mobile platforms
+- **Secure Storage**: Securely store sensitive information
+- **Platform-Specific Adaptations**: Automatically adapts to the current platform
+
+```typescript
+// Store data
+await pdos().storage.addItem('user_preferences', JSON.stringify(preferences));
+
+// Retrieve data
+const preferences = JSON.parse(await pdos().storage.getItem('user_preferences'));
+```
+
+### AppManager Module
+
+The AppManager module handles application lifecycle management:
+
+- **Platform Detection**: Automatically detects and adapts to different platforms
+- **Lifecycle Events**: Manages application lifecycle events (startup, foreground, background)
+- **Platform-Specific Optimizations**: Implements optimizations for different platforms
+
+```typescript
+// The AppManager is automatically initialized with the core system
+// Lifecycle events are handled internally
+```
+
+### Notification Module
+
+The Notification module manages user notifications across platforms:
+
+- **Cross-Platform Notifications**: Supports web and mobile notification systems
+- **Permission Management**: Handles notification permission requests
+- **Custom Notification Channels**: Configurable notification channels for Android
+- **Event Listeners**: Register callbacks for notification events
+
+```typescript
+// Add a notification listener
+await pdos().notification.addListener((notification) => {
+  console.log('New notification received:', notification);
+});
+```
+
+### DataRequest Module
+
+The DataRequest module provides access to health data from various sources:
+
+- **HealthKit Integration**: Seamless integration with Apple HealthKit
+- **Permission Management**: Handles health data access permissions
+- **Metrics Collection**: Collects and normalizes health metrics
+- **Data Aggregation**: Aggregates health data for analysis
+
+```typescript
+// Check access to health metrics
+await pdos().dataRequest.checkAccess(['step_count', 'heart_rate']);
+
+// Get today's health data
+const todaysSteps = await pdos().dataRequest.getTodaysValue('step_count');
+```
+
+## Actions
+
+PDOS provides a high-level actions API for common operations across different domains. Actions are pre-defined functions that abstract complex operations, making it easier to interact with the PDOS system without deep knowledge of its internal architecture.
+
+### Data Actions
+
+Data actions handle synchronization and retrieval of health data:
+
+- **Sync**: Synchronizes treatment binaries and updates the Merkle tree root hash
+- **GetAllRecords**: Retrieves all health data records from the data manifest
+
+```typescript
+// Synchronize data
+await actions.data.sync();
+
+// Get all health records
+const healthRecords = actions.data.getAllRecords();
+```
+
+### Inbox Actions
+
+Inbox actions manage message operations within the system:
+
+- **GetMessages**: Retrieves unread messages from the inbox
+- **ClearMessages**: Clears all messages from the inbox
+- **AddMessage**: Adds a new message to the inbox
+
+```typescript
+// Get all unread messages
+const messages = await actions.inbox.getMessages();
+
+// Clear all messages
+await actions.inbox.clearMessages();
+```
+
+### Treatments Actions
+
+Treatments actions handle operations related to medical treatments:
+
+- **AddTreatment**: Adds a new treatment to the treatment manifest
+- **GetActiveTreatments**: Retrieves all active treatments
+- **GetTreatment**: Finds a specific treatment by name
+- **GetTreatmentInstances**: Retrieves all instances of a specific treatment
+- **GetTreatmentBinaryForTreatment**: Retrieves the binary data associated with a treatment
+
+```typescript
+// Get all active treatments
+const treatments = actions.treatments.getActiveTreatments();
+
+// Add a new treatment
+await actions.treatments.addTreatment('Medication A', 'med-hash-123', {
+  dosage: '10mg',
+  frequency: 'twice daily'
+});
+
+// Get instances of a treatment
+const instances = actions.treatments.getTreatmentInstances('Medication A');
+```
+
+## Core
+
+The PDOS Core is the central management system that coordinates all components of the PDOS ecosystem. It handles module initialization, configuration, and lifecycle management.
+
+### Configuration
+
+The Core is initialized with a configuration object that defines its behavior:
+
+```typescript
+const core = new Core({
+  // Environment setting - currently only 'marigold' is supported
+  env: 'marigold',
+  
+  // Context for the PDOS instance
+  context: {
+    // Gateway URL for API communication
+    gatewayURL: 'https://your-gateway-url.com',
+    // Whether this instance is running as a compute node
+    isComputeNode: false
+  },
+  
+  // Optional test configuration
+  test: {
+    initCredentialId: 'test-credential-id'
+  },
+  
+  // Module configuration
+  modules: {
+    auth: {},
+    encryption: {
+      enabled: true
+    },
+    storage: {},
+    appManager: {},
+    notification: {},
+    dataRequest: {}
+  }
+});
+```
+
+### Initialization
+
+After configuring the Core, you need to start it to initialize all modules and stores:
+
+```typescript
+// Start PDOS with default configuration
+await core.start();
+
+// Start PDOS with dependency injection for specific modules
+await core.start({
+  storage: {
+    storageLib: customStorageImplementation
+  },
+  notification: {
+    Notifications: customNotificationSystem,
+    Permissions: customPermissionsSystem
+  }
+});
+```
+
+During initialization, the Core:
+
+1. Validates the configuration
+2. Loads and initializes requested modules
+3. Checks module dependencies
+4. Starts each module in the correct order
+5. Initializes the store system
+6. Calls post-start methods on all modules
+
+### Accessing Core Services
+
+The singleton pattern allows easy access to Core services:
+
+```typescript
+import pdos from '@alpinehealthcare/pdos';
+
+// Access modules
+const authModule = pdos().auth;
+const encryptionModule = pdos().encryption;
+
+// Access stores
+const userAccount = pdos().stores.userAccount;
+
+// Access the Merkle tree
+const rootNode = pdos().tree.root;
+```
+
+### Reset and Lifecycle Management
+
+The Core provides methods to manage the lifecycle of the PDOS system:
+
+```typescript
+// Reset the PDOS system
+await pdos().reset();
+
+// Check if PDOS has started
+const isStarted = pdos().started;
+
+// Access environment information
+const gatewayURL = pdos().gatewayURL;
+const isComputeNode = pdos().isComputeNode;
+```
+
+The reset method calls the restart method on all active modules, allowing them to clear state and reinitialize as needed.
 
 ## PDOS Merkle Tree
 
