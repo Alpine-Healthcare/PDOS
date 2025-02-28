@@ -307,7 +307,7 @@ export default class Encryption extends Module {
           evmContractConditions: accessCondition(
             this.core.modules.auth?.publicKey,
           ) as any,
-          chain: "baseSepolia",
+          chain: "ethereum",
           ciphertext,
           dataToEncryptHash,
           sessionSigs,
@@ -316,7 +316,11 @@ export default class Encryption extends Module {
       );
       return decryptedString;
     } catch (error) {
-      this.portalEmit?.("random", "failed decryptring", JSON.stringify(error));
+      this.portalEmit?.(
+        "random",
+        "failed decryptring",
+        JSON.stringify((error as any).message),
+      );
       throw new Error("Failed to decrypt with Lit");
     }
 
@@ -404,7 +408,7 @@ export default class Encryption extends Module {
       // Get the session signatures
       const sessionSigs = await this.litNodeClient.getSessionSigs({
         expiration: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-        chain: "baseSepolia",
+        chain: "ethereum",
         resourceAbilityRequests: [
           {
             resource: litResource,
