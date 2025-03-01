@@ -182,6 +182,11 @@ export default class Auth extends Module {
     if (address) {
       this.publicKey = address;
     }
+
+    if (this.core.isComputeNode) {
+      return;
+    }
+
     await this.initInfoForWalletUser();
   }
 

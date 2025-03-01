@@ -14,7 +14,12 @@ export default class Inbox extends PDFSNode {
   }
 
   public async addMessage(sender: string, message: string) {
-    const newMessages = [...this._rawNode.unread_messages];
+    let existingMessages = [];
+    if (this._rawNode.data.unread_messages) {
+      existingMessages = this._rawNode.data.unread_messages;
+    }
+
+    const newMessages = [...existingMessages];
     newMessages.push({
       message: message,
       sentOn: new Date().toISOString(),
@@ -22,13 +27,9 @@ export default class Inbox extends PDFSNode {
     });
 
     try {
-      await this.update(
-        {
-          ...this._rawNode,
-          unread_messages: newMessages,
-        },
-        true,
-      );
+      await this.update({
+        unread_messages: newMessages,
+      });
     } catch (e) {
       console.log("error: ", e);
     }
@@ -36,13 +37,9 @@ export default class Inbox extends PDFSNode {
 
   public async clearMessages() {
     try {
-      await this.update(
-        {
-          ...this._rawNode,
-          unread_messages: [],
-        },
-        true,
-      );
+      await this.update({
+        unread_messages: [],
+      });
     } catch (e) {
       console.log("error: ", JSON.stringify(e));
     }

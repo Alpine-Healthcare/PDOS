@@ -5,9 +5,9 @@ export const clearMessages = async () => {
 };
 
 export const getMessages = async () => {
-  return pdos().tree.root.edges.e_out_Inbox._rawNode.unread_messages;
+  return pdos().tree.root.edges.e_out_Inbox._rawNode.data.unread_messages;
 };
 
 export const addMessage = async (message: string) => {
-  return pdos().tree.root.edges.e_out_Inbox._rawNode.unread_messages;
+  return pdos().tree.root.edges.e_out_Inbox._rawNode.data.unread_messages;
 };

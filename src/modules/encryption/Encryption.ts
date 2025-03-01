@@ -73,6 +73,8 @@ const capacityDelegationAuthSig = {
 
 const PDOS_ACCESS_PACKAGE = "pdos-accessPackage";
 
+let litNodeClient: LitJsSdk.LitNodeClient | undefined;
+
 export interface AccessPackage {
   iv: string;
   datakey: string;
@@ -93,7 +95,12 @@ interface EncryptionConfig {
   portal?: "owner" | "remote";
 }
 
+interface DependencyInjection {
+  litNodePackage?: any;
+}
+
 export default class Encryption extends Module {
+  private litNodePackage: any | undefined;
   private litNodeClient: LitJsSdk.LitNodeClient | undefined;
   public accessPackage: AccessPackage | undefined;
   private accessPackageEncrypted: AccessPackageEncrypted | undefined;
@@ -101,8 +108,15 @@ export default class Encryption extends Module {
   constructor(
     core: Core,
     private config: EncryptionConfig,
+    private dependencyInjection?: DependencyInjection,
   ) {
     super(core);
+
+    if (this.dependencyInjection?.litNodePackage) {
+      this.litNodePackage = this.dependencyInjection.litNodePackage;
+    } else {
+      this.litNodePackage = LitJsSdk.LitNodeClient;
+    }
   }
 
   protected async start() {
@@ -114,11 +128,11 @@ export default class Encryption extends Module {
       return;
     }
 
-    this.litNodeClient = new LitJsSdk.LitNodeClient({
+    this.litNodeClient = new this.litNodePackage({
       litNetwork: LIT_NETWORK.DatilTest,
     });
 
-    await this.litNodeClient.connect();
+    await this.litNodeClient?.connect();
   }
 
   public async generateAccessPackage(): Promise<
@@ -348,6 +362,7 @@ export default class Encryption extends Module {
         "error",
         this.core.modules.auth?.publicKey ?? "missing publickey",
       );
+      console.log("lit clinet: ", this.litNodeClient);
       throw new Error("Missing litNodeClient, publickey, or signer");
     }
 
@@ -421,6 +436,8 @@ export default class Encryption extends Module {
       return sessionSigs;
     } catch (error) {
       this.portalEmit?.("error", "error", JSON.stringify(error));
+      console.log("error: ", error);
+      throw error;
     }
   }
 }
