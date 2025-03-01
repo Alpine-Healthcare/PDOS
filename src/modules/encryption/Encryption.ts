@@ -314,6 +314,14 @@ export default class Encryption extends Module {
     this.portalEmit?.("random", "dataToEncryptHash", dataToEncryptHash);
     this.portalEmit?.("random", "sessionSigs", JSON.stringify(sessionSigs));
 
+    console.log("ciphertext: ", ciphertext);
+    console.log("dataToEncryptHash: ", dataToEncryptHash);
+    console.log("sessionSigs: ", sessionSigs);
+    console.log(
+      "this.core.modules.auth?.publicKey: ",
+      this.core.modules.auth?.publicKey,
+    );
+
     // Decrypt the message
     try {
       const decryptedString = await decryptToString(
