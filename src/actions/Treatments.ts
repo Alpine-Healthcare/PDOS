@@ -52,7 +52,9 @@ export const getAll = async (): Promise<PDFSNode[]> => {
 };
 
 export const all = async (): Promise<Treatment[]> => {
-  return (await getAll()).map((node) => mapRawToTreatment(node._rawNode.data));
+  return (await getAll()).map((node) => {
+    return mapRawToTreatment(node._rawNode.data);
+  });
 };
 
 export const getActiveTreatments = async (): Promise<PDFSNode[]> => {
@@ -90,11 +92,15 @@ export const enable = async (treatmentName: string) => {
     throw new Error(`Treatment ${treatmentName} not found`);
   }
 
-  await treatment.update({
+  console.log("updating treatment", treatment);
+  const newObj = {
     ...treatment._rawNode.data,
     is_active: true,
     active_on: new Date().toISOString(),
-  });
+  };
+  console.log("new obj", newObj);
+
+  await treatment.update(newObj);
 
   await pdos().tree.root.syncLocalRootHash();
 };

@@ -270,6 +270,7 @@ export default class Auth extends Module {
     }
 
     if (isNewUser) {
+      this.initStep = InitSteps.GENERATING_ENCRYPTION_KEYS;
       await this.core.tree.root.addAccessPackage(
         generatedAccessPackageEncrypted,
       );

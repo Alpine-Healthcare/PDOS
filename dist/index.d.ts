@@ -26,10 +26,10 @@ export declare const actions: {
         getAllRecords: () => any;
     };
     user: {
-        updateInfo: (name?: string) => Promise<void>;
+        updateInfo: (name?: string, profileImageBase64?: string) => Promise<void>;
         getInfo: () => Promise<User>;
     };
 };
-export type { User, Treatment, Inbox, };
+export type { User, Treatment, Inbox };
 export { Core, PDFSNode, pdos };
 //# sourceMappingURL=index.d.ts.map

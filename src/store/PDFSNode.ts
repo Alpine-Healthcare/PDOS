@@ -70,6 +70,9 @@ export default class PDFSNode {
     return (async () => {
       if (this._hash) {
         this._rawNode = await getFromPdfs(this._hash);
+        if (this._nodeType.toLocaleLowerCase() === "treatment") {
+          console.log("got new node._rawNode", this._rawNode);
+        }
         if (this._rawNode.data) {
           try {
             this._rawNode.data =
@@ -100,6 +103,16 @@ export default class PDFSNode {
           this._nodeType,
         );
         this._rawNode = newNode.rawNode;
+        if (this._rawNode.data) {
+          try {
+            this._rawNode.data =
+              await this.core.modules.encryption?.decryptNode(
+                this._rawNode.data,
+              );
+          } catch (e) {
+            console.log("failed to decrypt");
+          }
+        }
         this._hash = newNode.hash;
         this._treePathInclusive = newNode.newTreePath;
         this._treePath = [...newNode.newTreePath].slice(0, -1);
@@ -225,7 +238,7 @@ export default class PDFSNode {
     await this.refreshTree(previousTreePath);
     this._rawNodeUpdate = {};
 
-    await this.core.tree.root.syncLocalRootHash();
+    //await this.core.tree.root.syncLocalRootHash();
   }
 
   protected async addChild(

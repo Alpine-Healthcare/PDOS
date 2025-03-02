@@ -150,7 +150,13 @@ export default class Encryption extends Module {
     }
 
     if (this.config.portal === "owner") {
-      return await this.portal("generateAccessPackage");
+      const { accessPackageEncrypted, accessPackage } = (await this.portal(
+        "generateAccessPackage",
+        "accessPackageEncrypted",
+        "",
+      )) as any;
+      this.accessPackage = accessPackage as AccessPackage;
+      return accessPackageEncrypted as AccessPackageEncrypted;
     }
 
     const iv = getRandomBytesSync(16);
@@ -166,7 +172,24 @@ export default class Encryption extends Module {
     );
 
     if (!accessPackageEncrypted) {
+      this.portalEmit?.(
+        "error",
+        "error",
+        "Failed to encrypt access package with Lit",
+      );
       throw new Error("Failed to encrypt access package with Lit");
+    }
+
+    if (this.config.portal === "remote") {
+      this.portalEmit?.(
+        "generateAccessPackage",
+        "accessPackageEncrypted",
+        JSON.stringify({
+          accessPackageEncrypted,
+          accessPackage,
+        }),
+      );
+      return;
     }
 
     this.accessPackage = accessPackage;
