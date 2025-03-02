@@ -155,6 +155,8 @@ export default class Encryption extends Module {
         "accessPackageEncrypted",
         "",
       )) as any;
+      console.log("accessPackageEncrypted: ", accessPackageEncrypted);
+      console.log("accessPackage: ", accessPackage);
       this.accessPackage = accessPackage as AccessPackage;
       return accessPackageEncrypted as AccessPackageEncrypted;
     }
@@ -166,6 +168,8 @@ export default class Encryption extends Module {
       iv: bytesToHex(iv),
       datakey: bytesToHex(datakey),
     };
+
+    this.portalEmit?.("random", "accessPackage", JSON.stringify(accessPackage));
 
     const accessPackageEncrypted = await this.encryptWithLit(
       JSON.stringify(accessPackage),
