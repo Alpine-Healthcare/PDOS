@@ -207,7 +207,11 @@ export default class Auth extends Module {
   }
 
   public async disconnectWalletUser() {
-    //await this.eip1193Provider.disconnect()
+    await this.core.modules.encryption?.disconnect();
+    this.eip1193Provider = undefined;
+    this.wallet = undefined;
+    this.ethersProvider = undefined;
+    this.publicKey = undefined;
     this.info = {
       isActive: false,
       isAuthenticated: false,

@@ -1,7 +1,7 @@
 import { makeObservable, observable, reaction, toJS } from "mobx";
 import pdos, { Core } from "../Core";
 import { getEdgeInfo } from "./Model";
-import { NetworkMapper } from "./NetworkMapper";
+import { findNodeInTree, NetworkMapper, traverseTree } from "./NetworkMapper";
 import { addToPdfs, getFromPdfs } from "./Pdfs";
 import { logger } from "../utils/logger";
 
@@ -13,8 +13,8 @@ export default class PDFSNode {
   public _treePathInclusive: string[] = [];
 
   protected _childrenRefreshMap: { [key: string]: any } = {};
-  public edges: { [key: string]: any } = {};
-  public edgeArray: any[] = [];
+  public edges: { [key: string]: PDFSNode } = {};
+  public edgeArray: PDFSNode[] = [];
 
   public _rawNode: any = {};
   public _rawNodeUpdate: any = {};
@@ -201,7 +201,11 @@ export default class PDFSNode {
     );
   }
 
-  protected async update(rawNodeUpdate: any, unencrypted: boolean = false) {
+  public async resync() {
+    await this.update({});
+  }
+
+  public async update(rawNodeUpdate: any, unencrypted: boolean = false) {
     let nodeUpdate = {};
 
     if (unencrypted) {
@@ -285,5 +289,17 @@ export default class PDFSNode {
     await newChild.refreshChildren;
 
     return newChild;
+  }
+
+  public async delete() {
+    const parent = findNodeInTree("TreatmentManifest", this.core.tree.root);
+    if (!parent) {
+      throw new Error(`Parent node TreatmentManifest not found`);
+    }
+
+    delete parent.edges[`e_out_TreatmentManifest`];
+    await parent.resync();
+
+    await this.core.tree.root.syncLocalRootHash();
   }
 }

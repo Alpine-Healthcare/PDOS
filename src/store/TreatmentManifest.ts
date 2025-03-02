@@ -16,21 +16,8 @@ export default class TreatmentManifest extends PDFSNode {
     super(core, treePath, "N_TreatmentManifest", hash);
     makeObservable(this, {
       addTreatment: action,
-      treatments: computed,
     });
     addNodeToNetworkMapper("Treatment", Treatment);
-  }
-
-  public get treatments(): Treatment[] {
-    return Object.entries(this.edges)
-      .filter(([edgeType, edge]) => {
-        if (edgeType.includes("Treatment")) {
-          return true;
-        }
-
-        return false;
-      })
-      .map(([edgeType, edge]) => edge);
   }
 
   public async addTreatment(

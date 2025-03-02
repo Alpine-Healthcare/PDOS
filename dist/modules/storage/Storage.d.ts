@@ -11,6 +11,7 @@ interface DependencyInjection {
     storageLib?: {
         setItem: (key: string, value: string) => void;
         getItem: (key: string) => void;
+        clear: (key: string) => void;
     };
 }
 export default class Storage extends Module {
@@ -19,6 +20,7 @@ export default class Storage extends Module {
     constructor(core: Core, config: Config | null, dependencyInjection: DependencyInjection | null);
     protected start(): Promise<void>;
     addItem(key: string, value: string): Promise<void>;
+    clear(key: string): Promise<void>;
     getItem(key: string): Promise<string | void | null>;
 }
 export {};

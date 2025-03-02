@@ -14,6 +14,7 @@ interface DependencyInjection {
   storageLib?: {
     setItem: (key: string, value: string) => void;
     getItem: (key: string) => void;
+    clear: (key: string) => void;
   };
 }
 
@@ -40,6 +41,13 @@ export default class Storage extends Module {
     }
 
     return localStorage.setItem(key, value);
+  }
+
+  async clear(key: string) {
+    if (this.dependencyInjection?.storageLib) {
+      return this.dependencyInjection.storageLib.clear(key);
+    }
+    return localStorage.clear();
   }
 
   async getItem(key: string) {

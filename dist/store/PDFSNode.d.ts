@@ -9,9 +9,9 @@ export default class PDFSNode {
         [key: string]: any;
     };
     edges: {
-        [key: string]: any;
+        [key: string]: PDFSNode;
     };
-    edgeArray: any[];
+    edgeArray: PDFSNode[];
     _rawNode: any;
     _rawNodeUpdate: any;
     constructor(core: Core, treePath: string[], nodeType: string, hash?: string);
@@ -19,13 +19,15 @@ export default class PDFSNode {
         hashId: string;
         rawNode: any;
     };
-    getChildren(): any[];
+    getChildren(): PDFSNode[];
     protected onNodeLoad(): void;
     get node(): Promise<void>;
     setRawNodeUpdate(rawNode: any): void;
     get refreshChildren(): Promise<void> | undefined;
     refreshTree(previousTreePath: string[]): Promise<void>;
-    protected update(rawNodeUpdate: any, unencrypted?: boolean): Promise<void>;
+    resync(): Promise<void>;
+    update(rawNodeUpdate: any, unencrypted?: boolean): Promise<void>;
     protected addChild(ChildClass: any, instanceName: string, nodeUpdate: any, edgeUpdate?: any): Promise<any>;
+    delete(): Promise<void>;
 }
 //# sourceMappingURL=PDFSNode.d.ts.map

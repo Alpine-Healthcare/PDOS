@@ -135,6 +135,13 @@ export default class Encryption extends Module {
     await this.litNodeClient?.connect();
   }
 
+  public async disconnect() {
+    this.accessPackage = undefined;
+    this.accessPackageEncrypted = undefined;
+    this.litNodeClient = undefined;
+    this.core.modules.storage?.clear(PDOS_ACCESS_PACKAGE);
+  }
+
   public async generateAccessPackage(): Promise<
     AccessPackageEncrypted | undefined
   > {

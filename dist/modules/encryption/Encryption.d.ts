@@ -24,6 +24,7 @@ export default class Encryption extends Module {
     private accessPackageEncrypted;
     constructor(core: Core, config: EncryptionConfig, dependencyInjection?: DependencyInjection | undefined);
     protected start(): Promise<void>;
+    disconnect(): Promise<void>;
     generateAccessPackage(): Promise<AccessPackageEncrypted | undefined>;
     setAccessPackage(accessPackageEncrypted: AccessPackageEncrypted): Promise<void>;
     encryptNode(data: string | object): Promise<string>;

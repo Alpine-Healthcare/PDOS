@@ -15,7 +15,7 @@ export default class Inbox extends PDFSNode {
 
   public async addMessage(sender: string, message: string) {
     let existingMessages = [];
-    if (this._rawNode.data.unread_messages) {
+    if (this._rawNode.data && this._rawNode.data.unread_messages) {
       existingMessages = this._rawNode.data.unread_messages;
     }
 
