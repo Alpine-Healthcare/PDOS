@@ -11,6 +11,15 @@ export interface Treatment {
   active_on: string;
 }
 
+export interface TreatmentInstance {
+  messages: {
+    message: string;
+    sender: string;
+    sentOn: string;
+  }[];
+  date: string;
+}
+
 const mapRawToTreatment = (raw: any): Treatment => {
   return {
     name: raw.name,
@@ -20,6 +29,13 @@ const mapRawToTreatment = (raw: any): Treatment => {
     hashId: raw.hashId,
     intake: raw.intake,
     active_on: raw.active_on,
+  };
+};
+
+const mapRawToTreatmentInstance = (raw: any): TreatmentInstance => {
+  return {
+    messages: raw.messages || [],
+    date: raw.date || new Date().toISOString(),
   };
 };
 
@@ -92,13 +108,11 @@ export const enable = async (treatmentName: string) => {
     throw new Error(`Treatment ${treatmentName} not found`);
   }
 
-  console.log("updating treatment", treatment);
   const newObj = {
     ...treatment._rawNode.data,
     is_active: true,
     active_on: new Date().toISOString(),
   };
-  console.log("new obj", newObj);
 
   await treatment.update(newObj);
 
@@ -135,11 +149,13 @@ export const getTreatment = async (
   treatment: string,
 ): Promise<PDFSNode | undefined> => {
   return (await getActiveTreatments()).find((t: any) => {
-    return t._rawNode.data.treatmentName === treatment;
+    return t._rawNode.data.treatmentName
+      .toLowerCase()
+      .includes(treatment.toLowerCase());
   });
 };
 
-export const getTreatmentInstances = async (treatment: string) => {
+export const getTreatmentInstancesRaw = async (treatment: string) => {
   const activeTreatment = await getTreatment(treatment);
 
   if (!activeTreatment) {
@@ -154,5 +170,13 @@ export const getTreatmentInstances = async (treatment: string) => {
 
   return instances.map(([key, value]: [string, any]) => {
     return value;
+  });
+};
+
+export const getTreatmentInstances = async (treatment: string) => {
+  const instances = await getTreatmentInstancesRaw(treatment);
+
+  return instances.map((instance: any) => {
+    return mapRawToTreatmentInstance(instance._rawNode.data);
   });
 };

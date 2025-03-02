@@ -22,7 +22,7 @@ export const traverseTree = (
 export const findNodeInTree = (name: string, root: PDFSNode) => {
   let foundNode: PDFSNode | undefined;
   traverseTree(root, (node: PDFSNode) => {
-    if (node._nodeType.toLowerCase().includes(name)) {
+    if (node._nodeType.toLowerCase().includes(name.toLowerCase())) {
       foundNode = node;
     }
   });
@@ -33,7 +33,7 @@ export const findNodeInTree = (name: string, root: PDFSNode) => {
 export const doesPDFSNodeExist = (name: string, root: PDFSNode) => {
   let foundNode = false;
   traverseTree(root, (node: PDFSNode) => {
-    if (node._nodeType.toLowerCase().includes(name)) {
+    if (node._nodeType.toLowerCase().includes(name.toLowerCase())) {
       foundNode = true;
     }
   });

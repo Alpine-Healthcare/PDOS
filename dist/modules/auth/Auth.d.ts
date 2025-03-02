@@ -67,11 +67,13 @@ export default class Auth extends Module {
     initStarted: boolean;
     credentialId: string | undefined;
     publicKey: string | undefined;
+    delegatedPublicKey: string | undefined;
     private ethersProvider;
     private eip1193Provider;
     private wallet;
     constructor(core: Core, config: Config);
     setPublicKey(publicKey: string): void;
+    setDelegatedPublicKey(publicKey: string): void;
     initializeWalletUserWithPrivateKey(): Promise<void>;
     initializeWalletUser(eip1193Provider?: EIP1193Provider): Promise<void>;
     disconnectWalletUser(): Promise<void>;

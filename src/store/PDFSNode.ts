@@ -215,7 +215,7 @@ export default class PDFSNode {
   }
 
   public async resync() {
-    await this.update({});
+    await this.update(this._rawNode.data);
   }
 
   public async update(rawNodeUpdate: any, unencrypted: boolean = false) {
@@ -310,7 +310,26 @@ export default class PDFSNode {
       throw new Error(`Parent node TreatmentManifest not found`);
     }
 
-    delete parent.edges[`e_out_TreatmentManifest`];
+    console.log("deleting", this._nodeType);
+    let keyToDelete = "";
+
+    Object.entries(parent.edges).forEach(([key, edge]) => {
+      if (edge._hash === this._hash) {
+        keyToDelete = key;
+      }
+    });
+
+    console.log("keyToDelete", keyToDelete);
+
+    delete parent.edges[keyToDelete];
+    delete parent._rawNode.edges[keyToDelete];
+    const edgeIndex = parent.edgeArray.findIndex(
+      (edge) => edge._hash === this._hash,
+    );
+    if (edgeIndex !== -1) {
+      parent.edgeArray.splice(edgeIndex, 1);
+    }
+    console.log("parent", JSON.stringify(Object.keys(parent.edges)));
     await parent.resync();
 
     await this.core.tree.root.syncLocalRootHash();

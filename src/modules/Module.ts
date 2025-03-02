@@ -40,8 +40,6 @@ export default class Module {
   protected async stop() {}
 
   public async portal<t>(type: string, prop?: string, data?: any) {
-    console.log("emitting with: ", type, prop, data);
-    console.log("this.portalEmit: ", this.portalEmit);
     if (!this.portalEmit) {
       throw new Error("Portal emit not set");
     }

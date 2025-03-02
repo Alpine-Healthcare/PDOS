@@ -147,6 +147,7 @@ export default class Auth extends Module {
 
   public credentialId: string | undefined = undefined;
   public publicKey: string | undefined;
+  public delegatedPublicKey: string | undefined;
 
   private ethersProvider: ethers.BrowserProvider | undefined;
   private eip1193Provider: EIP1193Provider | undefined;
@@ -169,6 +170,10 @@ export default class Auth extends Module {
 
   public setPublicKey(publicKey: string) {
     this.publicKey = publicKey;
+  }
+
+  public setDelegatedPublicKey(publicKey: string) {
+    this.delegatedPublicKey = publicKey;
   }
 
   public async initializeWalletUserWithPrivateKey() {
@@ -224,7 +229,6 @@ export default class Auth extends Module {
   /** Wallet Support */
 
   public async initInfoForWalletUser() {
-    console.log("setting up wallet");
     this.authType = AuthType.WALLET;
 
     try {
@@ -233,8 +237,6 @@ export default class Auth extends Module {
     } catch (e) {
       this.info.isActive = false;
     }
-
-    console.log("info", this.info);
 
     let generatedAccessPackageEncrypted = undefined;
     const isNewUser = !this.info.pdosRoot;
@@ -274,6 +276,7 @@ export default class Auth extends Module {
       await this.core.tree.root.addAccessPackage(
         generatedAccessPackageEncrypted,
       );
+      await this.core.tree.root.syncLocalRootHash();
       this.initStep = InitSteps.ONBOARDING;
       await this.onboard(this.core.tree.root._hash, "");
       await this.core.tree.root.init(this.info.pdosRoot);
@@ -286,7 +289,6 @@ export default class Auth extends Module {
       const accessPackage = await this.getAccessPackageFromRoot(
         this.info.pdosRoot,
       );
-      console.log("got accessPackage: ", accessPackage);
       await this.core.modules.encryption?.setAccessPackage(accessPackage);
       await this.core.tree.root.init(this.info.pdosRoot);
       await this.core.tree.root.syncLocalRootHash();

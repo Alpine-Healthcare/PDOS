@@ -1,5 +1,5 @@
 import pdos from "../../Core";
-import { clearMessages, getMessages } from "../../actions/Inbox";
+import { clear, get } from "../../actions/Inbox";
 
 // Mock dependencies
 jest.mock("../../Core", () => {
@@ -26,15 +26,15 @@ describe("Inbox Actions", () => {
   });
 
   describe("clearMessages", () => {
-    it("should call clearMessages on the Inbox edge", async () => {
-      await clearMessages();
+    it("should call clear on the Inbox edge", async () => {
+      await clear();
       expect(
         pdos().stores.userAccount.edges.e_out_Inbox.clearMessages,
       ).toHaveBeenCalled();
     });
   });
 
-  describe("getMessages", () => {
+  describe("get", () => {
     it("should return unread messages from Inbox", async () => {
       const mockMessages = [
         { id: 1, message: "Test message 1" },
@@ -56,7 +56,7 @@ describe("Inbox Actions", () => {
         },
       }));
 
-      const result = await getMessages();
+      const result = await get();
       expect(result).toEqual(mockMessages);
     });
 
@@ -76,7 +76,7 @@ describe("Inbox Actions", () => {
         },
       }));
 
-      const result = await getMessages();
+      const result = await get();
       expect(result).toBeUndefined();
     });
   });

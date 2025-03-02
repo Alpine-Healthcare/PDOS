@@ -1,4 +1,4 @@
-import { Core } from "../Core";
+import pdos, { Core } from "../Core";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
 import PDFSNode from "./PDFSNode";
 import TreatmentBinary from "./TreatmentBinary";
@@ -6,6 +6,7 @@ import TreatmentInstance from "./TreatmentInstance";
 
 export default class Treatment extends PDFSNode {
   public static _nodeType = "N_Treatment_I";
+  public static name = "Treatment";
 
   constructor(
     core: Core,
@@ -41,5 +42,7 @@ export default class Treatment extends PDFSNode {
       })),
       date: treatmentInstanceName,
     });
+
+    await pdos().tree.root.syncLocalRootHash();
   }
 }

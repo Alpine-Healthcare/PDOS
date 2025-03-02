@@ -1,12 +1,6 @@
 import pdos, { Core } from "./Core";
 import { getAllRecords, sync } from "./actions/Data";
-import {
-  clearMessages,
-  getMessages,
-  addMessage,
-  get,
-  Inbox,
-} from "./actions/Inbox";
+import { clear, get, add, Inbox } from "./actions/Inbox";
 import {
   addTreatment,
   getActive,
@@ -18,16 +12,16 @@ import {
   Treatment,
   hardDelete,
   all,
+  TreatmentInstance,
 } from "./actions/Treatments";
 import PDFSNode from "./store/PDFSNode";
 import { updateInfo, getInfo, User } from "./actions/User";
 
 export const actions = {
   inbox: {
-    getMessages,
-    clearMessages,
-    addMessage,
     get,
+    clear,
+    add,
   },
   treatments: {
     all,
@@ -50,6 +44,6 @@ export const actions = {
   },
 };
 
-export type { User, Treatment, Inbox };
+export type { User, Treatment, Inbox, TreatmentInstance };
 
 export { Core, PDFSNode, pdos };

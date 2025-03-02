@@ -130,6 +130,7 @@ export default class Encryption extends Module {
 
     this.litNodeClient = new this.litNodePackage({
       litNetwork: LIT_NETWORK.DatilTest,
+      debug: false,
     });
 
     await this.litNodeClient?.connect();
@@ -155,9 +156,11 @@ export default class Encryption extends Module {
         "accessPackageEncrypted",
         "",
       )) as any;
-      console.log("accessPackageEncrypted: ", accessPackageEncrypted);
-      console.log("accessPackage: ", accessPackage);
       this.accessPackage = accessPackage as AccessPackage;
+      await this.core.modules.storage?.addItem(
+        PDOS_ACCESS_PACKAGE,
+        JSON.stringify(accessPackage),
+      );
       return accessPackageEncrypted as AccessPackageEncrypted;
     }
 
@@ -168,8 +171,6 @@ export default class Encryption extends Module {
       iv: bytesToHex(iv),
       datakey: bytesToHex(datakey),
     };
-
-    this.portalEmit?.("random", "accessPackage", JSON.stringify(accessPackage));
 
     const accessPackageEncrypted = await this.encryptWithLit(
       JSON.stringify(accessPackage),
@@ -222,7 +223,6 @@ export default class Encryption extends Module {
       await this.core.modules.storage?.getItem(PDOS_ACCESS_PACKAGE);
 
     if (savedAccessPackage) {
-      console.log("saved access package", savedAccessPackage);
       this.accessPackage = JSON.parse(savedAccessPackage);
       return;
     }
@@ -348,14 +348,6 @@ export default class Encryption extends Module {
     this.portalEmit?.("random", "dataToEncryptHash", dataToEncryptHash);
     this.portalEmit?.("random", "sessionSigs", JSON.stringify(sessionSigs));
 
-    console.log("ciphertext: ", ciphertext);
-    console.log("dataToEncryptHash: ", dataToEncryptHash);
-    console.log("sessionSigs: ", sessionSigs);
-    console.log(
-      "this.core.modules.auth?.publicKey: ",
-      this.core.modules.auth?.publicKey,
-    );
-
     // Decrypt the message
     try {
       const decryptedString = await decryptToString(
@@ -404,7 +396,6 @@ export default class Encryption extends Module {
         "error",
         this.core.modules.auth?.publicKey ?? "missing publickey",
       );
-      console.log("lit clinet: ", this.litNodeClient);
       throw new Error("Missing litNodeClient, publickey, or signer");
     }
 

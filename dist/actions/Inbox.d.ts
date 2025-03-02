@@ -5,8 +5,8 @@ export interface Inbox {
         sentOn: string;
     }[];
 }
-export declare const clearMessages: () => Promise<void>;
+export declare const clear: () => Promise<void>;
 export declare const get: () => Promise<Inbox>;
-export declare const getMessages: () => Promise<any>;
-export declare const addMessage: (sender: string, message: string) => Promise<void>;
+export declare const getRaw: () => Promise<any>;
+export declare const add: (sender: string, message: string) => Promise<void>;
 //# sourceMappingURL=Inbox.d.ts.map

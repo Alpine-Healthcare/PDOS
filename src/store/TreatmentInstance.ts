@@ -3,6 +3,7 @@ import PDFSNode from "./PDFSNode";
 
 export default class TreatmentInstance extends PDFSNode {
   public static _nodeType = "N_TreatmentInstance_I";
+  public static name = "TreatmentInstance";
 
   constructor(
     core: Core,

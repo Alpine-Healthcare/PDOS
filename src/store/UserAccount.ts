@@ -25,15 +25,29 @@ export default class UserAccount extends PDFSNode {
     addNodeToNetworkMapper("Inbox", Inbox);
   }
 
-  public async syncLocalRootHash(addressToUpdate?: string) {
+  public async syncLocalRootHash() {
+    let address: string | undefined = undefined;
+
+    if (this.core.isComputeNode) {
+      address = this.core.modules.auth?.delegatedPublicKey;
+    } else {
+      address = this.core.modules.auth?.publicKey;
+    }
+
+    if (!address) {
+      throw new Error("No address found to sync root hash for");
+    }
+
     if (this.core.modules.auth?.authType === AuthType.WALLET) {
-      const hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate);
+      const hashId = await this.core.modules.auth?.getPDOSRoot(address);
       if (this._hash !== hashId) {
-        await this.core.modules.auth.updatePDOSRoot(
-          this._hash,
-          addressToUpdate ?? this.core.modules.auth.publicKey,
+        await this.core.modules.auth.updatePDOSRoot(this._hash, address);
+        console.log(
+          "# pdos : synced new root - " +
+            this._hash +
+            " with old root " +
+            hashId,
         );
-        console.log("# pdos : synced new root - " + this._hash);
       }
     }
   }
