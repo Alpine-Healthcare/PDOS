@@ -263,7 +263,8 @@ export default class PDFSNode {
 
     if (edgeUpdate) {
       Object.entries(edgeUpdate).forEach(([key, value]) => {
-        edges[key] = {
+        edges["e_out_" + key] = {
+          type: "N_" + key,
           child_hash_id: value,
         };
       });

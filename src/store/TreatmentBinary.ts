@@ -45,14 +45,10 @@ export default class TreatmentBinary extends PDFSNode {
         ) as DataGroup;
 
       if (!getDataGroup(metric)) {
-        console.log("Creating data group for metric", metric);
         await this.createDataGroup(metric);
-        console.log("finished creating data group", this.core.tree.root._hash);
       }
 
       const dataGroup = getDataGroup(metric);
-
-      console.log("dataGroup: ", dataGroup);
 
       await dataGroup.updateData();
     }

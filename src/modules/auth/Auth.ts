@@ -195,6 +195,12 @@ export default class Auth extends Module {
     await this.initInfoForWalletUser();
   }
 
+  public async checkBalance(address: string, eip1193Provider: EIP1193Provider) {
+    const provider = new ethers.BrowserProvider(eip1193Provider);
+    const balance = await provider.getBalance(address);
+    return balance;
+  }
+
   public async initializeWalletUser(eip1193Provider?: EIP1193Provider) {
     this.authType = AuthType.WALLET;
 
@@ -244,18 +250,15 @@ export default class Auth extends Module {
     if (isNewUser) {
       this.initStep = InitSteps.ADDING_TO_ALPINE;
       try {
-        const newUser = await fetch(
-          this.core.gatewayURL + "/auth/register-wallet-user",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              publicKey: this.publicKey,
-            }),
+        const newUser = await fetch(this.core.gatewayURL + "/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            publicKey: this.publicKey,
+          }),
+        });
         const newUserResponse = await newUser.json();
         const newPDOSRoot = (newUserResponse as any).hash_id;
         this.info.pdosRoot = newPDOSRoot;

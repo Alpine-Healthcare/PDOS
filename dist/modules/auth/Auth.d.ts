@@ -75,6 +75,7 @@ export default class Auth extends Module {
     setPublicKey(publicKey: string): void;
     setDelegatedPublicKey(publicKey: string): void;
     initializeWalletUserWithPrivateKey(): Promise<void>;
+    checkBalance(address: string, eip1193Provider: EIP1193Provider): Promise<bigint>;
     initializeWalletUser(eip1193Provider?: EIP1193Provider): Promise<void>;
     disconnectWalletUser(): Promise<void>;
     /** Wallet Support */

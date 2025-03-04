@@ -2,17 +2,15 @@ import pdos from "../Core";
 
 export interface User {
   name?: string;
+  profileImageHash?: string;
 }
 
-export const updateInfo = async (
-  name?: string,
-  profileImageBase64?: string,
-) => {
+export const updateInfo = async (name?: string, profileImageHash?: string) => {
   const user = pdos().tree.root;
 
   await user.update({
     name,
-    profileImageBase64,
+    profileImageHash,
   });
 
   await pdos().tree.root.syncLocalRootHash();

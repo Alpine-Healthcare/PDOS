@@ -1,4 +1,5 @@
 import { default as pdos, Core } from './Core';
+import { DataGroup } from './actions/Data';
 import { Inbox } from './actions/Inbox';
 import { Treatment, TreatmentInstance } from './actions/Treatments';
 import { default as PDFSNode } from './store/PDFSNode';
@@ -22,13 +23,14 @@ export declare const actions: {
     };
     data: {
         sync: () => Promise<void>;
-        getAllRecords: () => any;
+        getAllRecords: () => Promise<Record<string, DataGroup>>;
+        getGroup: (metric: string) => Promise<DataGroup | undefined>;
     };
     user: {
-        updateInfo: (name?: string, profileImageBase64?: string) => Promise<void>;
+        updateInfo: (name?: string, profileImageHash?: string) => Promise<void>;
         getInfo: () => Promise<User>;
     };
 };
-export type { User, Treatment, Inbox, TreatmentInstance };
+export type { User, Treatment, Inbox, TreatmentInstance, DataGroup };
 export { Core, PDFSNode, pdos };
 //# sourceMappingURL=index.d.ts.map

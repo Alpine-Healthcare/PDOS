@@ -15,6 +15,7 @@ export default class DataRequest extends Module {
     protected start(): Promise<void>;
     checkAccess(metrics: any[]): Promise<void>;
     getTodaysValue(metric: string): Promise<number | undefined>;
+    private isCumulativeMetric;
 }
 export {};
 //# sourceMappingURL=DataRequest.d.ts.map

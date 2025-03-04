@@ -1,5 +1,5 @@
 import pdos, { Core } from "./Core";
-import { getAllRecords, sync } from "./actions/Data";
+import { DataGroup, getAllRecords, sync, getGroup } from "./actions/Data";
 import { clear, get, add, Inbox } from "./actions/Inbox";
 import {
   addTreatment,
@@ -37,6 +37,7 @@ export const actions = {
   data: {
     sync,
     getAllRecords,
+    getGroup,
   },
   user: {
     updateInfo,
@@ -44,6 +45,5 @@ export const actions = {
   },
 };
 
-export type { User, Treatment, Inbox, TreatmentInstance };
-
+export type { User, Treatment, Inbox, TreatmentInstance, DataGroup };
 export { Core, PDFSNode, pdos };

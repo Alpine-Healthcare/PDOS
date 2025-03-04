@@ -36,7 +36,7 @@ export default class TreatmentManifest extends PDFSNode {
         treatmentBinaryHash: treatmentBinaryHash,
       },
       {
-        e_out_TreatmentBinary: treatmentBinaryHash,
+        TreatmentBinary: treatmentBinaryHash,
       },
     );
   }

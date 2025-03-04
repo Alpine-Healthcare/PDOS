@@ -66,18 +66,43 @@ export default class DataRequest extends Module {
     const endOfDay = new Date(today);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const response = await this.HealthKit.queryQuantitySamples(
-      this.MetricMap[metric],
-      {
-        from: startOfDay,
-        to: endOfDay,
-      },
-    );
+    try {
+      const response = await this.HealthKit.queryQuantitySamples(
+        this.MetricMap[metric],
+        {
+          from: startOfDay,
+          to: endOfDay,
+        },
+      );
 
-    if (response.length > 0) {
-      const quantity = response[0].quantity;
-      return quantity;
+      if (response.length === 0) {
+        return 0;
+      }
+
+      // For cumulative metrics like steps, we might want to sum all samples
+      if (this.isCumulativeMetric(metric)) {
+        return response.reduce(
+          (sum: any, sample: any) => sum + sample.quantity,
+          0,
+        );
+      } else {
+        // For metrics like weight, latest value might be more appropriate
+        return response[0].quantity;
+      }
+    } catch (error) {
+      console.error(`Error fetching ${metric}:`, error);
+      return undefined;
     }
-    return 0;
+  }
+
+  private isCumulativeMetric(metric: string): boolean {
+    // Add metrics that accumulate throughout the day
+    const cumulativeMetrics = [
+      "step_count",
+      "distance_walking_running",
+      "active_energy_burned",
+      // Add other cumulative metrics as needed
+    ];
+    return cumulativeMetrics.includes(metric);
   }
 }
