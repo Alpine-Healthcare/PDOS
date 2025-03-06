@@ -15,7 +15,7 @@ import {
   TreatmentInstance,
 } from "./actions/Treatments";
 import PDFSNode from "./store/PDFSNode";
-import { updateInfo, getInfo, User } from "./actions/User";
+import { updateInfo, getInfo, User, updatePushToken } from "./actions/User";
 
 export const actions = {
   inbox: {
@@ -42,6 +42,7 @@ export const actions = {
   user: {
     updateInfo,
     getInfo,
+    updatePushToken,
   },
 };
 

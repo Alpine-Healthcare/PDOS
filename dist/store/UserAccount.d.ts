@@ -5,6 +5,7 @@ export default class UserAccount extends PDFSNode {
     isLoaded: boolean;
     lastUpdateTimestamp: number;
     constructor(core: Core);
+    sync(): Promise<void>;
     syncLocalRootHash(): Promise<void>;
     addAccessPackage(accessPackage: any): Promise<void>;
     init(hash: string): Promise<string>;

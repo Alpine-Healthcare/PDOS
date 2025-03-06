@@ -1,6 +1,11 @@
 import pdos from "../Core";
 import PDFSNode from "../store/PDFSNode";
 export interface Inbox {
+  messages: {
+    message: string;
+    sender: string;
+    sentOn: string;
+  }[];
   unread_messages: {
     message: string;
     sender: string;
@@ -11,6 +16,7 @@ export interface Inbox {
 const mapInbox = (inbox: PDFSNode): Inbox => {
   return {
     unread_messages: inbox._rawNode.data.unread_messages,
+    messages: inbox._rawNode.data.messages,
   };
 };
 
@@ -41,16 +47,19 @@ export const add = async (sender: string, message: string) => {
     existingMessages = inbox._rawNode.data.unread_messages;
   }
 
-  const newMessages = [...existingMessages];
-  newMessages.push({
+  const newMessage = {
     message: message,
     sentOn: new Date().toISOString(),
     sender: sender,
-  });
+  };
+
+  const newMessages = [...existingMessages];
+  newMessages.push(newMessage);
 
   try {
     await inbox.update({
       unread_messages: newMessages,
+      messages: [newMessage],
     });
   } catch (e) {
     console.log("error: ", e);

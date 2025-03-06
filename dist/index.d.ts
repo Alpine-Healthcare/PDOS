@@ -29,6 +29,7 @@ export declare const actions: {
     user: {
         updateInfo: (name?: string, profileImageHash?: string) => Promise<void>;
         getInfo: () => Promise<User>;
+        updatePushToken: (expoPushToken: string) => Promise<void>;
     };
 };
 export type { User, Treatment, Inbox, TreatmentInstance, DataGroup };

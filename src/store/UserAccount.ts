@@ -25,6 +25,21 @@ export default class UserAccount extends PDFSNode {
     addNodeToNetworkMapper("Inbox", Inbox);
   }
 
+  public async sync() {
+    try {
+      this.isRefreshing = true;
+      const previousHash = this._hash;
+      const hashId = await this.core.modules.auth?.getPDOSRoot(
+        this.core.modules.auth?.publicKey,
+      );
+      if (previousHash !== hashId) {
+        this._hash = hashId;
+        await this.init(this._hash);
+      }
+      this.isRefreshing = false;
+    } catch (error) {}
+  }
+
   public async syncLocalRootHash() {
     let address: string | undefined = undefined;
 
@@ -71,7 +86,6 @@ export default class UserAccount extends PDFSNode {
   }
 
   public async refresh(oldTreePath: string[], updateTreePath: string[]) {
-    this.isRefreshing = true;
     logger.tree("\n\n\n\nTree Refresh!");
     logger.tree("---------------------------------");
     logger.tree("oldTreePath: ", oldTreePath);
@@ -124,7 +138,6 @@ export default class UserAccount extends PDFSNode {
       await updateFunctions[i]();
     }
 
-    this.isRefreshing = false;
     this._hash = updateTreePath[0];
   }
 }

@@ -1,4 +1,9 @@
 export interface Inbox {
+    messages: {
+        message: string;
+        sender: string;
+        sentOn: string;
+    }[];
     unread_messages: {
         message: string;
         sender: string;
