@@ -1,4 +1,4 @@
-import { default as PDOSNode } from './store/PDOSNode';
+import { default as PDOSNode } from './tree/base/PDOSNode';
 import { default as ModuleManager } from './modules/ModuleManager';
 import { default as ConstantsManager } from './constants/ConstantsManager';
 export declare let coreConstants: ConstantsManager;

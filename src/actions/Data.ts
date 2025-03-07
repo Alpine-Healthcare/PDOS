@@ -1,6 +1,6 @@
 import pdos from "../Core";
-import { traverseTree } from "../store/NetworkMapper";
-import TreatmentBinary from "../store/TreatmentBinary";
+import { traverseTree } from "../tree/NetworkMapper";
+import TreatmentBinary from "../tree/TreatmentBinary";
 
 export interface DataGroup {
   metric: string;
@@ -24,7 +24,7 @@ export const sync = async () => {
     break;
   }
 
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };
 
 export const getAllRecords = async (): Promise<Record<string, DataGroup>> => {

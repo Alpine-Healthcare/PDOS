@@ -1,4 +1,4 @@
-import { default as PDOSNode } from '../store/PDOSNode';
+import { default as PDOSNode } from '../tree/base/PDOSNode';
 export interface Treatment {
     name: string;
     treatmentName: string;

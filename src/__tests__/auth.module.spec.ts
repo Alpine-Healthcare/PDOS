@@ -87,7 +87,7 @@ describe("Auth Module Tests", () => {
       root: {
         init: jest.fn().mockResolvedValue(undefined),
         addAccessPackage: jest.fn().mockResolvedValue(undefined),
-        syncLocalRootHash: jest.fn().mockResolvedValue(undefined),
+        push: jest.fn().mockResolvedValue(undefined),
         _hash: mockPdosRoot,
         _rawNode: {
           access_package: {},

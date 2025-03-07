@@ -1,5 +1,5 @@
 import pdos from "../Core";
-import PDOSNode from "../store/PDOSNode";
+import PDOSNode from "../tree/base/PDOSNode";
 export interface Inbox {
   messages: {
     message: string;
@@ -65,5 +65,5 @@ export const add = async (sender: string, message: string) => {
   } catch (e) {
     console.log("error: ", e);
   }
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };

@@ -1,5 +1,5 @@
 import pdos from "../Core";
-import PDOSNode from "../store/PDOSNode";
+import PDOSNode from "../tree/base/PDOSNode";
 
 export interface User {
   name?: string;
@@ -15,7 +15,7 @@ export const updateInfo = async (name?: string, profileImageHash?: string) => {
     profileImageHash,
   });
 
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };
 
 export const updatePushToken = async (expoPushToken: string) => {
@@ -25,7 +25,7 @@ export const updatePushToken = async (expoPushToken: string) => {
     ...user._rawNode.data,
     expoPushToken,
   });
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };
 
 export const getInfo = async (): Promise<User> => {

@@ -2,7 +2,7 @@ import Module from "../Module";
 import { Core } from "../..";
 import { ethers } from "ethers";
 import { makeObservable, observable } from "mobx";
-import { getFromPdfs } from "../../store/Pdfs";
+import { getFromPdfs } from "../../utils/Pdfs";
 import { EIP1193Provider } from "viem";
 
 export enum AuthType {
@@ -279,11 +279,11 @@ export default class Auth extends Module {
       await this.core.tree.root.addAccessPackage(
         generatedAccessPackageEncrypted,
       );
-      await this.core.tree.root.syncLocalRootHash();
+      await this.core.tree.root.push();
       this.initStep = InitSteps.ONBOARDING;
       await this.onboard(this.core.tree.root._hash, "");
       await this.core.tree.root.init(this.info.pdosRoot);
-      await this.core.tree.root.syncLocalRootHash();
+      await this.core.tree.root.push();
       this.initStep = InitSteps.COMPLETED;
     } else {
       if (!this.info.pdosRoot) {
@@ -294,7 +294,7 @@ export default class Auth extends Module {
       );
       await this.core.modules.encryption?.setAccessPackage(accessPackage);
       await this.core.tree.root.init(this.info.pdosRoot);
-      await this.core.tree.root.syncLocalRootHash();
+      await this.core.tree.root.push();
     }
 
     console.log("# pdos - initial root hash ", this.core.tree.root._hash);

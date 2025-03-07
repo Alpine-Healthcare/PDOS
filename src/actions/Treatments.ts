@@ -1,5 +1,5 @@
 import pdos from "../Core";
-import PDOSNode from "../store/PDOSNode";
+import PDOSNode from "../tree/base/PDOSNode";
 
 export interface Treatment {
   name: string;
@@ -49,7 +49,7 @@ export const addTreatment = async (
     hashId,
     intake,
   );
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };
 
 export const getAll = async (): Promise<PDOSNode[]> => {
@@ -85,7 +85,7 @@ export const hardDelete = async (treatmentName: string) => {
   }
 
   await treatment.delete();
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };
 
 export const getActive = async (): Promise<Treatment[]> => {
@@ -116,7 +116,7 @@ export const enable = async (treatmentName: string) => {
 
   await treatment.update(newObj);
 
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };
 
 export const disable = async (treatmentName: string) => {
@@ -130,7 +130,7 @@ export const disable = async (treatmentName: string) => {
     is_active: false,
   });
 
-  await pdos().tree.root.syncLocalRootHash();
+  await pdos().tree.root.push();
 };
 
 export const getTreatmentBinaryForTreatment = async (treatment: PDOSNode) => {

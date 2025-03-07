@@ -1,0 +1,1 @@
+{"version":3,"file":"UserAccount.d.ts","sourceRoot":"","sources":["../../src/tree/UserAccount.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,SAAS,CAAC;AAK/B,OAAO,YAAY,MAAM,qBAAqB,CAAC;AAE/C,MAAM,CAAC,OAAO,OAAO,WAAY,SAAQ,YAAY;gBACvC,IAAI,EAAE,IAAI;IAOT,gBAAgB,CAAC,aAAa,EAAE,GAAG;CAQjD"}

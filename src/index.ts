@@ -14,7 +14,7 @@ import {
   all,
   TreatmentInstance,
 } from "./actions/Treatments";
-import PDOSNode from "./store/PDOSNode";
+import PDOSNode from "./tree/base/PDOSNode";
 import { updateInfo, getInfo, User, updatePushToken } from "./actions/User";
 
 export const actions = {

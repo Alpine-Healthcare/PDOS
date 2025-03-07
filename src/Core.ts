@@ -1,6 +1,6 @@
 import { reaction, makeAutoObservable } from "mobx";
 
-import PDOSNode from "./store/PDOSNode";
+import PDOSNode from "./tree/base/PDOSNode";
 
 /**
  * Modules
@@ -18,7 +18,7 @@ export let coreConstants: ConstantsManager;
 
 import { configure } from "mobx";
 
-import UserAccount from "./store/UserAccount";
+import UserAccount from "./tree/UserAccount";
 import { ConfigValidationError, ModuleNotFoundError } from "./Errors";
 
 configure({

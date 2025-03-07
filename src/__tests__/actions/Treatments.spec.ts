@@ -6,7 +6,7 @@ import {
   getTreatment,
   getTreatmentInstances,
 } from "../../actions/Treatments";
-import PDOSNode from "../../store/PDOSNode";
+import PDOSNode from "../../tree/base/PDOSNode";
 import { Core } from "../../Core";
 
 // Mock dependencies
@@ -19,7 +19,7 @@ jest.mock("../../Core", () => {
             addTreatment: jest.fn(),
           },
         },
-        syncLocalRootHash: jest.fn(),
+        push: jest.fn(),
       },
     },
     stores: {
@@ -51,7 +51,7 @@ describe("Treatment Actions", () => {
       expect(
         pdos().tree.root.edges.e_out_TreatmentManifest.addTreatment,
       ).toHaveBeenCalledWith(name, hashId, intake);
-      expect(pdos().tree.root.syncLocalRootHash).toHaveBeenCalled();
+      expect(pdos().tree.root.push).toHaveBeenCalled();
     });
   });
 

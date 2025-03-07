@@ -1,7 +1,7 @@
 import pdos from "../../Core";
 import { sync, getAllRecords } from "../../actions/Data";
-import PDOSNode from "../../store/PDOSNode";
-import { traverseTree } from "../../store/NetworkMapper";
+import PDOSNode from "../../tree/base/PDOSNode";
+import { traverseTree } from "../../tree/NetworkMapper";
 
 // Mock dependencies
 jest.mock("../../Core", () => {
@@ -15,7 +15,7 @@ jest.mock("../../Core", () => {
       },
       tree: {
         root: {
-          syncLocalRootHash: jest.fn(),
+          push: jest.fn(),
         },
       },
     },
@@ -23,7 +23,7 @@ jest.mock("../../Core", () => {
   return jest.fn(() => mockPdos);
 });
 
-jest.mock("../../store/NetworkMapper", () => ({
+jest.mock("../../tree/NetworkMapper", () => ({
   traverseTree: jest.fn(),
 }));
 
@@ -53,7 +53,7 @@ describe("Data Actions", () => {
         root: {},
         tree: {
           root: {
-            syncLocalRootHash: jest.fn(),
+            push: jest.fn(),
           },
         },
       }));
@@ -66,7 +66,7 @@ describe("Data Actions", () => {
 
       expect(traverseTree).toHaveBeenCalled();
       expect(mockNode.syncData).toHaveBeenCalled();
-      expect(pdos().tree.root.syncLocalRootHash).toHaveBeenCalled();
+      expect(pdos().tree.root.push).toHaveBeenCalled();
     });
   });
 

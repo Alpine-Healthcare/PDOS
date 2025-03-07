@@ -346,9 +346,9 @@ constructor(core: Core) {
   super(core, [], "N_UserAccount")
 
   // Register child node types in the NetworkMapper
-  addNodeToNetworkMapper("TreatmentManifest", TreatmentManifest)
-  addNodeToNetworkMapper("DataManifest", DataManifest)
-  addNodeToNetworkMapper("Inbox", Inbox)
+  addNode("TreatmentManifest", TreatmentManifest)
+  addNode("DataManifest", DataManifest)
+  addNode("Inbox", Inbox)
 }
 ```
 
@@ -394,11 +394,11 @@ public get node() {
 
 The root hash of the PDOS Merkle tree represents the state of the entire patient data structure. This hash is stored on-chain to provide a tamper-proof reference point for the data.
 
-The `syncLocalRootHash` method synchronizes the local root hash with the blockchain when changes are made:
+The `push` method synchronizes the local root hash with the blockchain when changes are made:
 
 ```typescript
 // Synchronizing the local root hash with the blockchain
-public async syncLocalRootHash(addressToUpdate?: string) {
+public async push(addressToUpdate?: string) {
   if (this.core.modules.auth?.authType === AuthType.WALLET) {
     // Get the current on-chain root hash
     const hashId = await this.core.modules.auth?.getPDOSRoot(addressToUpdate)

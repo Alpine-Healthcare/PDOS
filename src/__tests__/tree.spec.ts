@@ -1,11 +1,11 @@
 import { Core } from "../Core";
-import PDOSNode from "../store/PDOSNode";
-import UserAccount from "../store/UserAccount";
-import * as Pdfs from "../store/Pdfs";
+import PDOSNode from "../tree/base/PDOSNode";
+import UserAccount from "../tree/UserAccount";
+import * as Pdfs from "../utils/Pdfs";
 import { AuthType } from "../modules/auth/Auth";
 
 // Mock the Pdfs module
-jest.mock("../store/Pdfs", () => ({
+jest.mock("../tree/Pdfs", () => ({
   getFromPdfs: jest.fn(),
   addToPdfs: jest.fn(),
 }));
@@ -126,7 +126,7 @@ describe("PDOS Tree Tests", () => {
     test("should sync local root hash", async () => {
       userAccount._hash = "new-root-hash";
 
-      await userAccount.syncLocalRootHash();
+      await userAccount.push();
 
       expect(mockAuth.getPDOSRoot).toHaveBeenCalled();
       expect(mockAuth.updatePDOSRoot).toHaveBeenCalledWith(

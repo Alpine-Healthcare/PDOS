@@ -2,7 +2,7 @@ import { default as pdos, Core } from './Core';
 import { DataGroup } from './actions/Data';
 import { Inbox } from './actions/Inbox';
 import { Treatment, TreatmentInstance } from './actions/Treatments';
-import { default as PDOSNode } from './store/PDOSNode';
+import { default as PDOSNode } from './tree/base/PDOSNode';
 import { User } from './actions/User';
 export declare const actions: {
     inbox: {
