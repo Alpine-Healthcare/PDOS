@@ -1,10 +1,10 @@
 import pdos, { Core } from "../Core";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
-import PDFSNode from "./PDFSNode";
+import PDOSNode from "./PDOSNode";
 import TreatmentBinary from "./TreatmentBinary";
 import TreatmentInstance from "./TreatmentInstance";
 
-export default class Treatment extends PDFSNode {
+export default class Treatment extends PDOSNode {
   public static _nodeType = "N_Treatment_I";
   public static name = "Treatment";
 

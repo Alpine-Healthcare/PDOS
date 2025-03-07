@@ -1,7 +1,7 @@
 import { Core } from "../Core";
-import PDFSNode from "./PDFSNode";
+import PDOSNode from "./PDOSNode";
 
-export default class TreatmentInstance extends PDFSNode {
+export default class TreatmentInstance extends PDOSNode {
   public static _nodeType = "N_TreatmentInstance_I";
   public static name = "TreatmentInstance";
 

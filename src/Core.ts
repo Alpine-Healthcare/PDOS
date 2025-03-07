@@ -1,6 +1,6 @@
 import { reaction, makeAutoObservable } from "mobx";
 
-import PDFSNode from "./store/PDFSNode";
+import PDOSNode from "./store/PDOSNode";
 
 /**
  * Modules
@@ -50,7 +50,7 @@ interface CoreConfig {
 
 export class Core {
   private static rootInstance = UserAccount;
-  public root: PDFSNode | undefined = undefined;
+  public root: PDOSNode | undefined = undefined;
 
   public constants: ConstantsManager;
   public modules: ModuleManager = {};

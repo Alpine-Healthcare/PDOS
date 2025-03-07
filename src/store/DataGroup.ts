@@ -1,7 +1,7 @@
 import { Core } from "../Core";
-import PDFSNode from "./PDFSNode";
+import PDOSNode from "./PDOSNode";
 
-export default class DataGroup extends PDFSNode {
+export default class DataGroup extends PDOSNode {
   public static _nodeType = "N_DataGroup_I";
 
   constructor(

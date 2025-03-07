@@ -1,5 +1,5 @@
 import pdos from "../Core";
-import PDFSNode from "../store/PDFSNode";
+import PDOSNode from "../store/PDOSNode";
 export interface Inbox {
   messages: {
     message: string;
@@ -13,7 +13,7 @@ export interface Inbox {
   }[];
 }
 
-const mapInbox = (inbox: PDFSNode): Inbox => {
+const mapInbox = (inbox: PDOSNode): Inbox => {
   return {
     unread_messages: inbox._rawNode.data.unread_messages,
     messages: inbox._rawNode.data.messages,
@@ -25,6 +25,7 @@ export const clear = async () => {
   try {
     await inbox.update({
       unread_messages: [],
+      messages: [],
     });
   } catch (e) {
     console.log("error: ", JSON.stringify(e));

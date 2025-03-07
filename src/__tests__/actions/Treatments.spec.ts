@@ -6,7 +6,7 @@ import {
   getTreatment,
   getTreatmentInstances,
 } from "../../actions/Treatments";
-import PDFSNode from "../../store/PDFSNode";
+import PDOSNode from "../../store/PDOSNode";
 import { Core } from "../../Core";
 
 // Mock dependencies
@@ -106,7 +106,7 @@ describe("Treatment Actions", () => {
           gatewayURL: "http://test.com",
         },
       });
-      const mockTreatment = new PDFSNode(
+      const mockTreatment = new PDOSNode(
         mockCore,
         ["root", "treatment"],
         "Treatment",

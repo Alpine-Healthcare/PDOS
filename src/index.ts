@@ -14,7 +14,7 @@ import {
   all,
   TreatmentInstance,
 } from "./actions/Treatments";
-import PDFSNode from "./store/PDFSNode";
+import PDOSNode from "./store/PDOSNode";
 import { updateInfo, getInfo, User, updatePushToken } from "./actions/User";
 
 export const actions = {
@@ -47,4 +47,4 @@ export const actions = {
 };
 
 export type { User, Treatment, Inbox, TreatmentInstance, DataGroup };
-export { Core, PDFSNode, pdos };
+export { Core, PDOSNode, pdos };

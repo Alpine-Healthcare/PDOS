@@ -1,5 +1,5 @@
 import pdos from "../Core";
-import PDFSNode from "../store/PDFSNode";
+import PDOSNode from "../store/PDOSNode";
 
 export interface Treatment {
   name: string;
@@ -52,7 +52,7 @@ export const addTreatment = async (
   await pdos().tree.root.syncLocalRootHash();
 };
 
-export const getAll = async (): Promise<PDFSNode[]> => {
+export const getAll = async (): Promise<PDOSNode[]> => {
   const treatmentManifest =
     await pdos().tree.root.edges?.e_out_TreatmentManifest;
 
@@ -64,7 +64,7 @@ export const getAll = async (): Promise<PDFSNode[]> => {
 
       return false;
     })
-    .map(([edgeType, edge]) => edge) as PDFSNode[];
+    .map(([edgeType, edge]) => edge) as PDOSNode[];
 };
 
 export const all = async (): Promise<Treatment[]> => {
@@ -73,9 +73,9 @@ export const all = async (): Promise<Treatment[]> => {
   });
 };
 
-export const getActiveTreatments = async (): Promise<PDFSNode[]> => {
+export const getActiveTreatments = async (): Promise<PDOSNode[]> => {
   const allTreatments = await getAll();
-  return allTreatments.filter((n: PDFSNode) => n._rawNode.data.is_active);
+  return allTreatments.filter((n: PDOSNode) => n._rawNode.data.is_active);
 };
 
 export const hardDelete = async (treatmentName: string) => {
@@ -89,7 +89,7 @@ export const hardDelete = async (treatmentName: string) => {
 };
 
 export const getActive = async (): Promise<Treatment[]> => {
-  return (await getActiveTreatments()).map((t: PDFSNode) => {
+  return (await getActiveTreatments()).map((t: PDOSNode) => {
     return {
       name: t._rawNode.data.name,
       treatmentName: t._rawNode.data.treatmentName,
@@ -133,13 +133,13 @@ export const disable = async (treatmentName: string) => {
   await pdos().tree.root.syncLocalRootHash();
 };
 
-export const getTreatmentBinaryForTreatment = async (treatment: PDFSNode) => {
+export const getTreatmentBinaryForTreatment = async (treatment: PDOSNode) => {
   return treatment.edges.e_out_TreatmentBinary;
 };
 
 export const getTreatmentRaw = async (
   treatment: string,
-): Promise<PDFSNode | undefined> => {
+): Promise<PDOSNode | undefined> => {
   return (await getAll()).find((t: any) => {
     return t._rawNode.data.treatmentName === treatment;
   });
@@ -147,7 +147,7 @@ export const getTreatmentRaw = async (
 
 export const getTreatment = async (
   treatment: string,
-): Promise<PDFSNode | undefined> => {
+): Promise<PDOSNode | undefined> => {
   return (await getActiveTreatments()).find((t: any) => {
     return t._rawNode.data.treatmentName
       .toLowerCase()

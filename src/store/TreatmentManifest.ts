@@ -1,10 +1,10 @@
 import { action, computed, makeObservable, observable } from "mobx";
 import { Core } from "../Core";
-import PDFSNode from "./PDFSNode";
+import PDOSNode from "./PDOSNode";
 import Treatment from "./Treatment";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
 
-export default class TreatmentManifest extends PDFSNode {
+export default class TreatmentManifest extends PDOSNode {
   public static _nodeType = "N_TreatmentManifest";
 
   constructor(

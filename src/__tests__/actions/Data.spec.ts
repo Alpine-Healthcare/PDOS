@@ -1,6 +1,6 @@
 import pdos from "../../Core";
 import { sync, getAllRecords } from "../../actions/Data";
-import PDFSNode from "../../store/PDFSNode";
+import PDOSNode from "../../store/PDOSNode";
 import { traverseTree } from "../../store/NetworkMapper";
 
 // Mock dependencies

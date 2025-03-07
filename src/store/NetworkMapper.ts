@@ -1,12 +1,12 @@
-import PDFSNode from "./PDFSNode";
+import PDOSNode from "./PDOSNode";
 
 export const NetworkMapper: any = {};
 export const addNodeToNetworkMapper = (nodeType: string, nodeClass: any) =>
   (NetworkMapper[nodeType] = nodeClass);
 
 export const traverseTree = (
-  root: PDFSNode,
-  callback: (node: PDFSNode) => void,
+  root: PDOSNode,
+  callback: (node: PDOSNode) => void,
 ) => {
   callback(root);
 
@@ -19,9 +19,9 @@ export const traverseTree = (
   }
 };
 
-export const findNodeInTree = (name: string, root: PDFSNode) => {
-  let foundNode: PDFSNode | undefined;
-  traverseTree(root, (node: PDFSNode) => {
+export const findNodeInTree = (name: string, root: PDOSNode) => {
+  let foundNode: PDOSNode | undefined;
+  traverseTree(root, (node: PDOSNode) => {
     if (node._nodeType.toLowerCase().includes(name.toLowerCase())) {
       foundNode = node;
     }
@@ -30,9 +30,9 @@ export const findNodeInTree = (name: string, root: PDFSNode) => {
   return foundNode;
 };
 
-export const doesPDFSNodeExist = (name: string, root: PDFSNode) => {
+export const doesPDOSNodeExist = (name: string, root: PDOSNode) => {
   let foundNode = false;
-  traverseTree(root, (node: PDFSNode) => {
+  traverseTree(root, (node: PDOSNode) => {
     if (node._nodeType.toLowerCase().includes(name.toLowerCase())) {
       foundNode = true;
     }

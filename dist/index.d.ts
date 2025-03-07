@@ -2,7 +2,7 @@ import { default as pdos, Core } from './Core';
 import { DataGroup } from './actions/Data';
 import { Inbox } from './actions/Inbox';
 import { Treatment, TreatmentInstance } from './actions/Treatments';
-import { default as PDFSNode } from './store/PDFSNode';
+import { default as PDOSNode } from './store/PDOSNode';
 import { User } from './actions/User';
 export declare const actions: {
     inbox: {
@@ -14,9 +14,9 @@ export declare const actions: {
         all: () => Promise<Treatment[]>;
         hardDelete: (treatmentName: string) => Promise<void>;
         getActive: () => Promise<Treatment[]>;
-        getActiveTreatments: () => Promise<PDFSNode[]>;
+        getActiveTreatments: () => Promise<PDOSNode[]>;
         getTreatmentInstances: (treatment: string) => Promise<TreatmentInstance[]>;
-        getTreatmentBinaryForTreatment: (treatment: PDFSNode) => Promise<PDFSNode>;
+        getTreatmentBinaryForTreatment: (treatment: PDOSNode) => Promise<PDOSNode>;
         addTreatment: (name: string, hashId: string, intake: object) => Promise<void>;
         enable: (treatmentName: string) => Promise<void>;
         disable: (treatmentName: string) => Promise<void>;
@@ -33,5 +33,5 @@ export declare const actions: {
     };
 };
 export type { User, Treatment, Inbox, TreatmentInstance, DataGroup };
-export { Core, PDFSNode, pdos };
+export { Core, PDOSNode, pdos };
 //# sourceMappingURL=index.d.ts.map

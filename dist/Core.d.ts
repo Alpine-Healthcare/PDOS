@@ -1,4 +1,4 @@
-import { default as PDFSNode } from './store/PDFSNode';
+import { default as PDOSNode } from './store/PDOSNode';
 import { default as ModuleManager } from './modules/ModuleManager';
 import { default as ConstantsManager } from './constants/ConstantsManager';
 export declare let coreConstants: ConstantsManager;
@@ -20,7 +20,7 @@ interface CoreConfig {
 export declare class Core {
     private config;
     private static rootInstance;
-    root: PDFSNode | undefined;
+    root: PDOSNode | undefined;
     constants: ConstantsManager;
     modules: ModuleManager;
     stores: any;

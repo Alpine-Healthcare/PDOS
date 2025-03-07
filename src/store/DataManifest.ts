@@ -1,7 +1,7 @@
 import { Core } from "../Core";
 import DataGroup from "./DataGroup";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
-import PDFSNode from "./PDFSNode";
+import PDOSNode from "./PDOSNode";
 
 export const toCamel = (s: string) => {
   const camelCase = s.replace(/([-_][a-z])/gi, ($1) => {
@@ -11,7 +11,7 @@ export const toCamel = (s: string) => {
   return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
 };
 
-export default class DataManifest extends PDFSNode {
+export default class DataManifest extends PDOSNode {
   public static _nodeType = "N_DataManifest";
 
   constructor(

@@ -4,11 +4,11 @@ import { logger } from "../utils/logger";
 import DataManifest from "./DataManifest";
 import Inbox from "./Inbox";
 import { addNodeToNetworkMapper } from "./NetworkMapper";
-import PDFSNode from "./PDFSNode";
+import PDOSNode from "./PDOSNode";
 import TreatmentManifest from "./TreatmentManifest";
 import { AuthType } from "../modules/auth/Auth";
 
-export default class UserAccount extends PDFSNode {
+export default class UserAccount extends PDOSNode {
   public isRefreshing: boolean = false;
   public isLoaded: boolean = false;
   public lastUpdateTimestamp: number = 0;

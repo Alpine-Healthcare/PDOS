@@ -1,5 +1,5 @@
 import pdos from "../Core";
-import PDFSNode from "../store/PDFSNode";
+import PDOSNode from "../store/PDOSNode";
 
 export interface User {
   name?: string;
@@ -19,7 +19,7 @@ export const updateInfo = async (name?: string, profileImageHash?: string) => {
 };
 
 export const updatePushToken = async (expoPushToken: string) => {
-  const user: PDFSNode = pdos().tree.root;
+  const user: PDOSNode = pdos().tree.root;
 
   await user.update({
     ...user._rawNode.data,

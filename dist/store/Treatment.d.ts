@@ -1,6 +1,6 @@
 import { Core } from '../Core';
-import { default as PDFSNode } from './PDFSNode';
-export default class Treatment extends PDFSNode {
+import { default as PDOSNode } from './PDOSNode';
+export default class Treatment extends PDOSNode {
     static _nodeType: string;
     static name: string;
     constructor(core: Core, treePath: string[], instanceType: string, hash?: string);

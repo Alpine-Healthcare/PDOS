@@ -1,10 +1,10 @@
 import { Core } from "../Core";
 import DataGroup from "./DataGroup";
 import { toCamel } from "./DataManifest";
-import { doesPDFSNodeExist } from "./NetworkMapper";
-import PDFSNode from "./PDFSNode";
+import { doesPDOSNodeExist } from "./NetworkMapper";
+import PDOSNode from "./PDOSNode";
 
-export default class TreatmentBinary extends PDFSNode {
+export default class TreatmentBinary extends PDOSNode {
   public static _nodeType = "N_TreatmentBinary";
 
   constructor(
@@ -30,7 +30,7 @@ export default class TreatmentBinary extends PDFSNode {
 
   private async createDataGroup(metric: string) {
     const rootNode = this.core.tree.root;
-    if (!doesPDFSNodeExist(toCamel(metric), rootNode)) {
+    if (!doesPDOSNodeExist(toCamel(metric), rootNode)) {
       await rootNode.edges.e_out_DataManifest.addDataGroup(metric);
     }
   }

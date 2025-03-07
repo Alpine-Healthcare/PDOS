@@ -1,5 +1,5 @@
 import { Core } from "../Core";
-import PDFSNode from "../store/PDFSNode";
+import PDOSNode from "../store/PDOSNode";
 import UserAccount from "../store/UserAccount";
 import * as Pdfs from "../store/Pdfs";
 import { AuthType } from "../modules/auth/Auth";
@@ -44,11 +44,11 @@ describe("PDOS Tree Tests", () => {
     core.modules.auth = mockAuth;
   });
 
-  describe("PDFSNode", () => {
-    let node: PDFSNode;
+  describe("PDOSNode", () => {
+    let node: PDOSNode;
 
     beforeEach(() => {
-      node = new PDFSNode(core, [], "TestNode");
+      node = new PDOSNode(core, [], "TestNode");
     });
 
     test("should create a new node when no hash is provided", async () => {
@@ -68,7 +68,7 @@ describe("PDOS Tree Tests", () => {
     });
 
     test("should load existing node when hash is provided", async () => {
-      node = new PDFSNode(core, [], "TestNode", "existing-hash");
+      node = new PDOSNode(core, [], "TestNode", "existing-hash");
       const mockExistingNode = {
         type: "TestNode",
         data: "test-data",

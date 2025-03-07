@@ -1,6 +1,6 @@
 import { Core } from '../Core';
-import { default as PDFSNode } from './PDFSNode';
-export default class UserAccount extends PDFSNode {
+import { default as PDOSNode } from './PDOSNode';
+export default class UserAccount extends PDOSNode {
     isRefreshing: boolean;
     isLoaded: boolean;
     lastUpdateTimestamp: number;
