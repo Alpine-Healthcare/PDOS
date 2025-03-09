@@ -5,6 +5,7 @@ export interface Inbox {
     message: string;
     sender: string;
     sentOn: string;
+    action: string;
   }[];
   unread_messages: {
     message: string;
@@ -41,26 +42,32 @@ export const getRaw = async () => {
   return pdos().tree.root.edges.e_out_Inbox._rawNode.data.unread_messages;
 };
 
-export const add = async (sender: string, message: string) => {
-  const inbox = pdos().tree.root.edges.e_out_Inbox;
-  let existingMessages = [];
+export const add = async (sender: string, message: string, action: string) => {
+  const inbox = await pdos().tree.root.edges.e_out_Inbox;
+  let existingUnreadMessages = [];
   if (inbox._rawNode.data && inbox._rawNode.data.unread_messages) {
-    existingMessages = inbox._rawNode.data.unread_messages;
+    existingUnreadMessages = inbox._rawNode.data.unread_messages;
+  }
+
+  let existingMessages = [];
+  if (inbox._rawNode.data && inbox._rawNode.data.messages) {
+    existingMessages = inbox._rawNode.data.messages;
   }
 
   const newMessage = {
     message: message,
     sentOn: new Date().toISOString(),
     sender: sender,
+    action: action,
   };
 
-  const newMessages = [...existingMessages];
-  newMessages.push(newMessage);
+  existingMessages = existingMessages.filter((m: any) => m.sender !== sender);
+  existingMessages.push(newMessage);
 
   try {
     await inbox.update({
-      unread_messages: newMessages,
-      messages: [newMessage],
+      unread_messages: existingUnreadMessages,
+      messages: existingMessages,
     });
   } catch (e) {
     console.log("error: ", e);

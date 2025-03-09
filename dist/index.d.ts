@@ -8,7 +8,7 @@ export declare const actions: {
     inbox: {
         get: () => Promise<Inbox>;
         clear: () => Promise<void>;
-        add: (sender: string, message: string) => Promise<void>;
+        add: (sender: string, message: string, action: string) => Promise<void>;
     };
     treatments: {
         all: () => Promise<Treatment[]>;
