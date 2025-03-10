@@ -3,19 +3,21 @@ import { DataGroup, getAllRecords, sync, getGroup } from "./actions/Data";
 import { clear, get, add, Inbox } from "./actions/Inbox";
 import {
   addTreatment,
-  getActive,
-  getActiveTreatments,
-  getTreatmentBinaryForTreatment,
-  getTreatmentInstances,
   enable,
   disable,
-  Treatment,
   hardDelete,
+  addEncounter,
+} from "./actions/Treatments/update";
+import {
+  getTreatmentInstances,
+  getTreatmentBinaryForTreatment,
+  getActiveTreatments,
+  getActive,
   all,
-  TreatmentInstance,
-} from "./actions/Treatments";
+} from "./actions/Treatments/get";
 import PDOSNode from "./tree/base/PDOSNode";
 import { updateInfo, getInfo, User, updatePushToken } from "./actions/User";
+import { Treatment, TreatmentInstance } from "./actions/Treatments/type";
 
 export const actions = {
   inbox: {
@@ -24,15 +26,16 @@ export const actions = {
     add,
   },
   treatments: {
-    all,
     hardDelete,
+    addTreatment,
+    addEncounter,
+    enable,
+    disable,
+    all,
     getActive,
     getActiveTreatments,
     getTreatmentInstances,
     getTreatmentBinaryForTreatment,
-    addTreatment,
-    enable,
-    disable,
   },
   data: {
     sync,

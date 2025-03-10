@@ -1,9 +1,10 @@
-import { makeObservable, observable, reaction, toJS } from "mobx";
+import { makeObservable, observable, reaction } from "mobx";
 import pdos, { Core } from "../../Core";
 import { getEdgeInfo } from "../Model";
-import { findNodeInTree, NetworkMapper, traverseTree } from "../NetworkMapper";
+import { findNodeInTree, NetworkMapper } from "../NetworkMapper";
 import { addToPdfs, getFromPdfs } from "../../utils/Pdfs";
 import { logger } from "../../utils/logger";
+import PDOSStorageNode from "./PDOSStorageNode";
 
 export default class PDOSNode {
   public _nodeType = "";
@@ -218,14 +219,22 @@ export default class PDOSNode {
     await this.update(this._rawNode.data);
   }
 
-  public async update(rawNodeUpdate: any, unencrypted: boolean = false) {
+  public async update(
+    rawNodeUpdate: object | null = null,
+    unencrypted: boolean = false,
+  ) {
     let nodeUpdate = {};
 
     if (unencrypted) {
       this._rawNodeUpdate = rawNodeUpdate;
     } else {
+      if (!rawNodeUpdate) {
+        rawNodeUpdate = {};
+      }
+      console.log("rawNodeUpdate", rawNodeUpdate);
       const encrypted =
         await pdos().modules.encryption?.encryptNode(rawNodeUpdate);
+      console.log("encrypted", encrypted);
       nodeUpdate = {
         data: encrypted,
       };
@@ -241,9 +250,9 @@ export default class PDOSNode {
     //await this.core.tree.root.push();
   }
 
-  protected async addChild(
+  public async addChild(
     ChildClass: any,
-    instanceName: string,
+    instanceName: string | undefined,
     nodeUpdate: any,
     edgeUpdate?: any,
   ) {
@@ -334,5 +343,44 @@ export default class PDOSNode {
     await parent.resync();
 
     await this.core.tree.root.push();
+  }
+
+  private getStorageDate(date: Date) {
+    return {
+      year: date.getFullYear().toString(),
+      month: date.getMonth().toString(),
+      day: date.getDate().toString(),
+    };
+  }
+
+  public async addStorageChild(node: any, date: Date, data: any) {
+    const storageDate = this.getStorageDate(date);
+
+    const yearEdge = "e_out_PDOSStorageNode_" + storageDate.year;
+    if (!this.edges[yearEdge]) {
+      console.log("adding year", storageDate.year);
+      await this.addChild(node, storageDate.year, {});
+      console.log("added year", storageDate.year);
+    }
+
+    const monthEdge = "e_out_PDOSStorageNode_" + storageDate.month;
+    if (!this.edges[yearEdge].edges[monthEdge]) {
+      console.log("adding month", storageDate.month);
+      await this.edges[yearEdge].addChild(node, storageDate.month, {});
+      console.log("added month", storageDate.month);
+    }
+
+    const dayEdge = "e_out_PDOSStorageNode_" + storageDate.day;
+    if (!this.edges[yearEdge].edges[monthEdge].edges[dayEdge]) {
+      console.log("adding day", storageDate.day);
+      await this.edges[yearEdge].edges[monthEdge].addChild(
+        node,
+        storageDate.day,
+        {},
+      );
+      console.log("added day", storageDate.day);
+    }
+
+    await this.edges[yearEdge].edges[monthEdge].edges[dayEdge].update(data);
   }
 }

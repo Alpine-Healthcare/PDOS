@@ -3,6 +3,7 @@ import { addNode } from "./NetworkMapper";
 import PDOSNode from "./base/PDOSNode";
 import TreatmentBinary from "./TreatmentBinary";
 import TreatmentInstance from "./TreatmentInstance";
+import TreatmentEncounter from "./TreatmentEncounter";
 
 export default class Treatment extends PDOSNode {
   public static _nodeType = "N_Treatment_I";
@@ -17,6 +18,7 @@ export default class Treatment extends PDOSNode {
     super(core, treePath, "N_Treatment_" + instanceType, hash);
     addNode("TreatmentBinary", TreatmentBinary);
     addNode("TreatmentInstance", TreatmentInstance);
+    addNode("TreatmentEncounter", TreatmentEncounter);
   }
 
   public async disable() {

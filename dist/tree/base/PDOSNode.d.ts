@@ -26,8 +26,10 @@ export default class PDOSNode {
     get refreshChildren(): Promise<void> | undefined;
     refreshTree(previousTreePath: string[]): Promise<void>;
     resync(): Promise<void>;
-    update(rawNodeUpdate: any, unencrypted?: boolean): Promise<void>;
-    protected addChild(ChildClass: any, instanceName: string, nodeUpdate: any, edgeUpdate?: any): Promise<any>;
+    update(rawNodeUpdate?: object | null, unencrypted?: boolean): Promise<void>;
+    addChild(ChildClass: any, instanceName: string | undefined, nodeUpdate: any, edgeUpdate?: any): Promise<any>;
     delete(): Promise<void>;
+    private getStorageDate;
+    addStorageChild(node: any, date: Date, data: any): Promise<void>;
 }
 //# sourceMappingURL=PDOSNode.d.ts.map

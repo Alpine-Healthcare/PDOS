@@ -1,13 +1,12 @@
 import pdos from "../../Core";
-import {
-  addTreatment,
-  getActiveTreatments,
-  getTreatmentBinaryForTreatment,
-  getTreatment,
-  getTreatmentInstances,
-} from "../../actions/Treatments";
+import { addTreatment } from "../../actions/Treatments/update";
 import PDOSNode from "../../tree/base/PDOSNode";
 import { Core } from "../../Core";
+import {
+  getActiveTreatments,
+  getTreatment,
+  getTreatmentInstances,
+} from "../../actions/Treatments/get";
 
 // Mock dependencies
 jest.mock("../../Core", () => {

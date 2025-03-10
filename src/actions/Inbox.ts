@@ -23,14 +23,10 @@ const mapInbox = (inbox: PDOSNode): Inbox => {
 
 export const clear = async () => {
   const inbox = pdos().tree.root.edges.e_out_Inbox;
-  try {
-    await inbox.update({
-      unread_messages: [],
-      messages: [],
-    });
-  } catch (e) {
-    console.log("error: ", JSON.stringify(e));
-  }
+  await inbox.update({
+    unread_messages: [],
+    messages: [],
+  });
 };
 
 export const get = async (): Promise<Inbox> => {
