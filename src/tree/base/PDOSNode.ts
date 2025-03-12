@@ -353,34 +353,38 @@ export default class PDOSNode {
     };
   }
 
-  public async addStorageChild(node: any, date: Date, data: any) {
+  protected async addStorageChild(
+    storageNode: any,
+    childNode: any,
+    instanceName: string | undefined,
+    date: Date,
+    data: any,
+  ) {
     const storageDate = this.getStorageDate(date);
 
     const yearEdge = "e_out_PDOSStorageNode_" + storageDate.year;
     if (!this.edges[yearEdge]) {
-      console.log("adding year", storageDate.year);
-      await this.addChild(node, storageDate.year, {});
-      console.log("added year", storageDate.year);
+      await this.addChild(storageNode, storageDate.year, {});
     }
 
     const monthEdge = "e_out_PDOSStorageNode_" + storageDate.month;
     if (!this.edges[yearEdge].edges[monthEdge]) {
-      console.log("adding month", storageDate.month);
-      await this.edges[yearEdge].addChild(node, storageDate.month, {});
-      console.log("added month", storageDate.month);
+      await this.edges[yearEdge].addChild(storageNode, storageDate.month, {});
     }
 
     const dayEdge = "e_out_PDOSStorageNode_" + storageDate.day;
     if (!this.edges[yearEdge].edges[monthEdge].edges[dayEdge]) {
-      console.log("adding day", storageDate.day);
       await this.edges[yearEdge].edges[monthEdge].addChild(
-        node,
+        storageNode,
         storageDate.day,
         {},
       );
-      console.log("added day", storageDate.day);
     }
 
-    await this.edges[yearEdge].edges[monthEdge].edges[dayEdge].update(data);
+    await this.edges[yearEdge].edges[monthEdge].edges[dayEdge].addChild(
+      childNode,
+      instanceName,
+      data,
+    );
   }
 }

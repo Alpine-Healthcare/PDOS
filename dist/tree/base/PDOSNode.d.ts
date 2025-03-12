@@ -30,6 +30,6 @@ export default class PDOSNode {
     addChild(ChildClass: any, instanceName: string | undefined, nodeUpdate: any, edgeUpdate?: any): Promise<any>;
     delete(): Promise<void>;
     private getStorageDate;
-    addStorageChild(node: any, date: Date, data: any): Promise<void>;
+    protected addStorageChild(storageNode: any, childNode: any, instanceName: string | undefined, date: Date, data: any): Promise<void>;
 }
 //# sourceMappingURL=PDOSNode.d.ts.map
